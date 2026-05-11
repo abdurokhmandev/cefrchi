@@ -1,29 +1,41 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from config import GOOGLE_API_KEY
 import os
 import time
+import json
 
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('models/gemini-flash-latest')
+# Initialize the new GenAI client
+client = genai.Client(api_key=GOOGLE_API_KEY)
+MODEL_ID = 'gemini-2.0-flash' # Using the latest flash model
 
 async def transcribe(audio_path: str) -> str:
     try:
-        audio_file = genai.upload_file(path=audio_path)
-        while audio_file.state.name == "PROCESSING":
+        # Upload using the new SDK
+        audio_file = client.files.upload(path=audio_path)
+        
+        # Poll for processing state (new SDK handles this slightly differently, but state is still available)
+        while audio_file.state == "PROCESSING":
             time.sleep(1)
-            audio_file = genai.get_file(audio_file.name)
+            audio_file = client.files.get(name=audio_file.name)
 
-        response = model.generate_content([
-            "Transcribe this audio into English text. Only output the transcript.",
-            audio_file
-        ])
-        genai.delete_file(audio_file.name)
+        if audio_file.state == "FAILED":
+            raise Exception("Audio processing failed")
+
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=[
+                "Transcribe this audio into English text. Only output the transcript.",
+                audio_file
+            ]
+        )
+        
+        # Cleanup
+        client.files.delete(name=audio_file.name)
         return response.text.strip()
     except Exception as e:
         print(f"STT Error: {e}")
         return ""
-
-import json
 
 async def get_feedback(transcript: str, topic: str, lang: str, part: int = 1) -> dict:
     try:
@@ -39,9 +51,13 @@ async def get_feedback(transcript: str, topic: str, lang: str, part: int = 1) ->
 
         full_prompt = f"{system_prompt}\n\nCONTEXT: {part_instruction}\nTOPIC: {topic}\nTRANSCRIPT: {transcript}"
         
-        response = model.generate_content(full_prompt)
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=full_prompt
+        )
         text = response.text.strip()
         
+        # Clean JSON markdown if present
         if text.startswith("```json"):
             text = text[7:-3].strip()
         elif text.startswith("```"):
@@ -99,7 +115,10 @@ async def detect_level(transcripts: list) -> str:
         
         Return ONLY the level (e.g., B2).
         """
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt
+        )
         level = response.text.strip()
         # Ensure it's a valid level
         for l in ['C2', 'C1', 'B2', 'B1', 'A2', 'A1']:
@@ -117,4 +136,5 @@ def progress_bar(score_str: str) -> str:
         return "█" * filled + "░" * empty
     except:
         return "░" * 9
+
 
