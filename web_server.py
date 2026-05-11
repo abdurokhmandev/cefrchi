@@ -10,9 +10,12 @@ bot = Bot(token=BOT_TOKEN)
 # Sodda autentifikatsiya middleware
 @web.middleware
 async def auth_middleware(request, handler):
+    # OPTIONS so'rovlarini har doim o'tkazib yuboramiz (CORS uchun)
+    if request.method == 'OPTIONS':
+        return await handler(request)
+
     # Faqat API va Admin sahifalari uchun tekshiramiz
     if request.path.startswith('/api/admin') or request.path == '/admin':
-        # Cookiedan tokenni olamiz
         token = request.cookies.get('admin_token')
         if token != "authenticated_admin":
             if request.path.startswith('/api/'):
@@ -62,26 +65,66 @@ async def get_stats(request):
         return web.json_response({"error": str(e)}, status=500)
 
 async def broadcast(request):
-    data = await request.json()
-    text = data.get('text')
-    if not text: return web.json_response({"error": "No text"}, status=400)
-    users = db.get_all_users()
-    count = 0
-    for user in users:
-        try:
-            await bot.send_message(user['tg_id'], text, parse_mode="HTML")
-            count += 1
-        except: pass
-    return web.json_response({"status": "ok", "count": count})
+    try:
+        data = await request.json()
+        text = data.get('text')
+        filters = data.get('filters', {}) # {exam: 'IELTS', level: 'B1'}
+        
+        if not text: return web.json_response({"error": "No text"}, status=400)
+        
+        users = db.get_all_users()
+        count = 0
+        for user in users:
+            # Filtrlar bo'yicha tekshirish
+            if filters.get('exam') and user['exam'] != filters['exam']: continue
+            if filters.get('level') and user['level'] != filters['level']: continue
+            
+            try:
+                await bot.send_message(user['tg_id'], text, parse_mode="HTML")
+                count += 1
+            except Exception as e:
+                print(f"Send error to {user['tg_id']}: {e}")
+        
+        return web.json_response({"status": "ok", "count": count})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 async def topics_api(request):
     if request.method == "GET":
         topics = db.get_all_topics()
-        return web.json_response([{"id": t[0], "part": t[1], "topic": t[4]} for t in topics])
+        return web.json_response([
+            {"id": t[0], "part": t[1], "level": t[2], "exam": t[3], "topic": t[4]} 
+            for t in topics
+        ])
     elif request.method == "POST":
         data = await request.json()
-        db.add_topic(data.get('part', 1), 'ALL', 'ALL', data.get('topic'), 0)
-        return web.json_response({"status": "ok"})
+        topic_text = data.get('topic')
+        part = data.get('part', 1)
+        exam = data.get('exam', 'ALL')
+        level = data.get('level', 'ALL')
+        
+        # 1. Bazaga saqlash
+        topic_id = db.add_topic(part, level, exam, topic_text, 0)
+        
+        # 2. Userlarga xabar yuborish
+        users = db.get_all_users()
+        
+        btn = InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text="🎤 Sinab ko'rish", callback_data=f"start_topic_{topic_id}")
+        ]])
+        
+        msg = f"🆕 <b>Yangi Speaking Topik!</b>\n\n🎯 {exam} | Part {part}\n📝 {topic_text[:100]}...\n\n<i>Hozirroq sinab ko'ring va AI feedback oling!</i>"
+        
+        for user in users:
+            if exam != 'ALL' and user['exam'] != exam: continue
+            if level != 'ALL' and user['level'] != level: continue
+            try:
+                await bot.send_message(user['tg_id'], msg, parse_mode="HTML", reply_markup=btn)
+            except: pass
+            
+        return web.json_response({"status": "ok", "id": topic_id})
 
 async def admin_page(request):
     return web.FileResponse('static/admin.html')

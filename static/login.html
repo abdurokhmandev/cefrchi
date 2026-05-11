@@ -3,76 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CEFRchi Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Login | CEFRchi Premium Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #6366f1;
             --secondary: #a855f7;
-            --bg: #0f172a;
-            --card: rgba(30, 41, 59, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
-            --text: #f8fafc;
+            --accent: #00d2ff;
+            --bg: #030712;
+            --glass: rgba(17, 24, 39, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Outfit', sans-serif;
             background: var(--bg);
-            color: var(--text);
+            color: white;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
-                        radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.15), transparent);
+        }
+
+        /* Animated Background Particles */
+        .bg-blobs {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            filter: blur(100px);
+            opacity: 0.2;
+            border-radius: 50%;
+            animation: float 20s infinite alternate;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(100px, 100px) rotate(360deg); }
         }
 
         .login-card {
-            background: var(--card);
-            backdrop-filter: blur(20px);
-            padding: 40px;
-            border-radius: 32px;
-            border: 1px solid var(--border);
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            padding: 50px;
+            border-radius: 35px;
+            border: 1px solid var(--glass-border);
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.8s ease-out;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            position: relative;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, var(--primary), transparent, var(--secondary));
+            border-radius: 35px;
+            z-index: -1;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
         }
 
-        .header { text-align: center; margin-bottom: 35px; }
-        .header h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 32px;
-            background: linear-gradient(to right, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
         }
-        .header p { color: #94a3b8; font-size: 14px; }
 
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 8px; margin-left: 5px; }
-        .form-group input {
+        h1 { font-size: 32px; font-weight: 800; margin-bottom: 10px; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p { color: #94a3b8; font-size: 15px; margin-bottom: 35px; }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px; margin-left: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .input-group input {
             width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border);
-            padding: 16px 20px;
-            border-radius: 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            padding: 18px 25px;
+            border-radius: 20px;
             color: white;
             font-family: inherit;
+            font-size: 16px;
             transition: 0.3s;
         }
-        .form-group input:focus {
+        .input-group input:focus {
             outline: none;
             border-color: var(--primary);
+            background: rgba(0,0,0,0.5);
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
@@ -80,45 +116,54 @@
             background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 16px;
-            border-radius: 16px;
+            padding: 18px;
+            border-radius: 20px;
             width: 100%;
             font-weight: 700;
             font-size: 16px;
             cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
+            transition: 0.4s;
+            margin-top: 15px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+            filter: brightness(1.1);
+        }
 
-        .error {
+        #error-msg {
             background: rgba(244, 63, 94, 0.1);
-            color: #f43f5e;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            text-align: center;
+            color: #fb7185;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 14px;
             margin-bottom: 20px;
             display: none;
+            border: 1px solid rgba(244, 63, 94, 0.2);
         }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="header">
-            <h1>CEFRchi Admin</h1>
-            <p>Boshqaruv paneliga xush kelibsiz</p>
-        </div>
+    <div class="bg-blobs">
+        <div class="blob" style="top: -100px; right: -100px;"></div>
+        <div class="blob" style="bottom: -100px; left: -100px; animation-delay: -5s;"></div>
+    </div>
 
-        <div id="error-msg" class="error">Login yoki parol xato!</div>
+    <div class="login-card">
+        <div class="logo-icon">🗣</div>
+        <h1>Xush kelibsiz</h1>
+        <p>CEFRchi AI Admin boshqaruv paneliga kiring</p>
+
+        <div id="error-msg">Login yoki parol xato! Iltimos qaytadan urining.</div>
 
         <form id="login-form">
-            <div class="form-group">
-                <label>Login</label>
-                <input type="text" id="username" placeholder="Admin username" required>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="admin" required>
             </div>
-            <div class="form-group">
-                <label>Parol</label>
+            <div class="input-group">
+                <label>Password</label>
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
             <button type="submit" class="btn">Kirish</button>
@@ -130,12 +175,13 @@
 
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const btn = e.target.querySelector('button');
+            btn.innerText = 'Yuklanmoqda...';
+            btn.disabled = true;
 
             const formData = new FormData();
-            formData.append('username', username);
-            formData.append('password', password);
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
 
             try {
                 const res = await fetch(`${API_BASE}/login`, {
@@ -144,14 +190,18 @@
                     credentials: 'include'
                 });
 
-                if (res.url.includes('admin') || res.ok) {
+                if (res.ok) {
                     window.location.href = 'admin.html';
                 } else {
                     document.getElementById('error-msg').style.display = 'block';
+                    btn.innerText = 'Kirish';
+                    btn.disabled = false;
                 }
             } catch (err) {
                 console.error(err);
                 document.getElementById('error-msg').style.display = 'block';
+                btn.innerText = 'Kirish';
+                btn.disabled = false;
             }
         };
     </script>

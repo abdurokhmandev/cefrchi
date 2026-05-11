@@ -126,10 +126,12 @@ def update_user_field(tg_id, field, value):
 def add_topic(part, level, exam, topic, added_by, category='General'):
     conn = sqlite3.connect(DB_PATH)
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    conn.execute("INSERT INTO topics (part, level, exam, topic, added_by, created_at, category) VALUES (?,?,?,?,?,?,?)",
+    cursor = conn.execute("INSERT INTO topics (part, level, exam, topic, added_by, created_at, category) VALUES (?,?,?,?,?,?,?)",
                  (part, level, exam, topic, added_by, date, category))
+    topic_id = cursor.lastrowid
     conn.commit()
     conn.close()
+    return topic_id
 
 def delete_topic(topic_id):
     conn = sqlite3.connect(DB_PATH)
