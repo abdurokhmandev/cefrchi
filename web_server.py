@@ -68,12 +68,13 @@ async def broadcast(request):
     try:
         data = await request.json()
         text = data.get('text')
-        filters = data.get('filters', {}) # {exam: 'IELTS', level: 'B1'}
+        filters = data.get('filters', {})
         
         if not text: return web.json_response({"error": "No text"}, status=400)
         
         users = db.get_all_users()
         count = 0
+        import asyncio
         for user in users:
             # Filtrlar bo'yicha tekshirish
             if filters.get('exam') and user['exam'] != filters['exam']: continue
@@ -82,8 +83,9 @@ async def broadcast(request):
             try:
                 await bot.send_message(user['tg_id'], text, parse_mode="HTML")
                 count += 1
+                await asyncio.sleep(0.05) # Telegram spamdan himoya
             except Exception as e:
-                print(f"Send error to {user['tg_id']}: {e}")
+                print(f"Xato (user {user['tg_id']}): {e}")
         
         return web.json_response({"status": "ok", "count": count})
     except Exception as e:

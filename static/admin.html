@@ -259,21 +259,34 @@
             if(!text || !confirm("Filtrlar bo'yicha barchaga xabar yuborilsinmi?")) return;
             
             const btn = document.getElementById('b-btn');
-            btn.innerText = "🚀 Yuborilmoqda..."; btn.disabled = true;
+            btn.innerText = "🚀 Yuborilmoqda..."; 
+            btn.disabled = true;
 
-            const res = await apiRequest('/api/admin/broadcast', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({
-                    text: text,
-                    filters: {
-                        exam: document.getElementById('b-exam').value,
-                        level: document.getElementById('b-level').value
-                    }
-                })
-            });
-            alert(`✅ Xabar yuborildi! Jami: ${res.count} user`);
-            btn.innerText = "🚀 Xabarni Yuborish"; btn.disabled = false;
+            try {
+                const res = await apiRequest('/api/admin/broadcast', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        text: text,
+                        filters: {
+                            exam: document.getElementById('b-exam').value,
+                            level: document.getElementById('b-level').value
+                        }
+                    })
+                });
+                
+                if (res && res.status === "ok") {
+                    alert(`✅ Xabar yuborildi! Jami: ${res.count} user`);
+                } else {
+                    alert("❌ Xatolik yuz berdi: " + (res.error || "Noma'lum xato"));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("❌ Serverga ulanishda xato!");
+            } finally {
+                btn.innerText = "🚀 Xabarni Yuborish"; 
+                btn.disabled = false;
+            }
         }
 
         function switchTab(id, el) {
