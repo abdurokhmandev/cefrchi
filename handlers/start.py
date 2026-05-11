@@ -46,9 +46,12 @@ async def start_reg(cb: CallbackQuery, state: FSMContext):
     await state.set_state(Registration.lang)
     await cb.message.edit_text(t('step_lang', 'uz'), reply_markup=kb.lang_kb())
 
-@router.callback_query(Registration.lang)
+@router.callback_query(Registration.lang, F.data.startswith("lang_"))
 async def reg_lang(cb: CallbackQuery, state: FSMContext):
-    lang = cb.data.split("_")[1]
+    try:
+        lang = cb.data.split("_")[1]
+    except IndexError:
+        lang = "uz"
     await state.update_data(lang=lang)
     await state.set_state(Registration.full_name)
     await cb.message.edit_text(t('step_name', lang))
@@ -107,9 +110,12 @@ async def reg_interests(cb: CallbackQuery, state: FSMContext):
     await state.update_data(selected_interests=selected)
     await cb.message.edit_reply_markup(reply_markup=kb.interests_kb(lang, selected))
 
-@router.callback_query(Registration.level)
+@router.callback_query(Registration.level, F.data.startswith("level_"))
 async def reg_level(cb: CallbackQuery, state: FSMContext):
-    level = cb.data.split("_")[1]
+    try:
+        level = cb.data.split("_")[1]
+    except IndexError:
+        level = "B1"
     data = await state.get_data()
     lang = data['lang']
     
@@ -166,18 +172,25 @@ async def reg_level_test(message: Message, state: FSMContext):
         msg_ids.append(msg.message_id)
         await state.update_data(msg_ids=msg_ids)
 
-@router.callback_query(Registration.exam)
+@router.callback_query(Registration.exam, F.data.startswith("exam_"))
 async def reg_exam(cb: CallbackQuery, state: FSMContext):
-    exam = cb.data.split("_")[1]
+    try:
+        exam = cb.data.split("_")[1]
+    except IndexError:
+        exam = "IELTS"
     await state.update_data(exam=exam)
     data = await state.get_data()
     lang = data['lang']
     await state.set_state(Registration.source)
     await cb.message.edit_text(t('step_source', lang), reply_markup=kb.source_kb(lang))
 
-@router.callback_query(Registration.source)
+@router.callback_query(Registration.source, F.data.startswith("source_"))
 async def reg_source(cb: CallbackQuery, state: FSMContext):
-    source = cb.data.split("_")[1]
+    try:
+        source = cb.data.split("_")[1]
+    except IndexError:
+        source = "other"
+    
     data = await state.get_data()
     
     # Save to DB

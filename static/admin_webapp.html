@@ -332,6 +332,12 @@
                 const res = await fetch('/api/admin/stats', {
                     headers: { 'X-Telegram-Init-Data': tg.initData }
                 });
+                
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || "Ulanishda xatolik");
+                }
+
                 const data = await res.json();
                 
                 document.getElementById('stat-users').innerText = data.total_users;
@@ -345,7 +351,14 @@
                 document.getElementById('loader').classList.add('hidden');
             } catch (e) {
                 console.error(e);
-                alert("Xatolik yuz berdi!");
+                document.getElementById('loader').innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Xatolik yuz berdi!</p>
+                        <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">${e.message}</p>
+                        <button class="btn" onclick="location.reload()">Qayta urinish</button>
+                        <p style="font-size:10px; color:var(--text-muted); margin-top:20px;">Eslatma: Panelni faqat Telegram orqali oching!</p>
+                    </div>
+                `;
             }
         }
 
