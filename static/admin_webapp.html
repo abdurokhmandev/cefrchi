@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Dashboard</title>
+    <title>CEFRchi Admin Panel</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --primary: #38bdf8;
-            --secondary: #818cf8;
-            --accent: #f472b6;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #f43f5e;
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
             --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
         }
 
         * {
@@ -27,144 +27,134 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 90px;
             overflow-x: hidden;
-            padding-bottom: 80px;
-        }
-
-        h1, h2, h3 {
-            font-family: 'Outfit', sans-serif;
         }
 
         .header {
-            padding: 24px;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
             border-bottom: 1px solid var(--border);
-            margin-bottom: 20px;
+            text-align: center;
         }
 
         .header h1 {
-            font-size: 24px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            background: linear-gradient(to right, #818cf8, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
         }
 
         .container {
-            padding: 0 16px;
+            padding: 20px;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
         .stat-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            padding: 16px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            transition: transform 0.2s;
-        }
-
-        .stat-card:active {
-            transform: scale(0.98);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .stat-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .chart-container {
-            background: var(--card-bg);
+            background: var(--card);
+            backdrop-filter: blur(12px);
             padding: 20px;
-            border-radius: 20px;
+            border-radius: 24px;
             border: 1px solid var(--border);
-            margin-bottom: 24px;
+            transition: 0.3s;
         }
 
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .stat-card:active { transform: scale(0.95); }
+
+        .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+        .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+        .chart-box {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
         }
 
-        .user-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .search-box {
+            margin-bottom: 20px;
+            position: relative;
         }
 
-        .user-item {
-            background: var(--card-bg);
-            padding: 12px 16px;
-            border-radius: 12px;
+        .search-box input {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 45px 14px 20px;
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .user-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 12px;
             border: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            animation: slideUp 0.4s ease-out both;
         }
 
-        .user-info h4 {
-            font-size: 14px;
-            margin-bottom: 2px;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .user-info p {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
+        .user-info h4 { font-size: 15px; margin-bottom: 4px; }
+        .user-info p { font-size: 12px; color: var(--text-muted); }
 
-        .user-status {
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 20px;
-            background: rgba(56, 189, 248, 0.2);
+        .user-badge {
+            background: rgba(99, 102, 241, 0.15);
             color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .nav-bar {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(15, 23, 42, 0.9);
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            padding: 12px;
             display: flex;
             justify-content: space-around;
-            padding: 12px;
-            z-index: 100;
+            z-index: 1000;
         }
 
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            color: var(--text-muted);
-            font-size: 10px;
+            gap: 5px;
             text-decoration: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 500;
+            transition: 0.3s;
         }
 
-        .nav-item.active {
-            color: var(--primary);
-        }
+        .nav-item.active { color: var(--primary); }
 
         .nav-icon {
             width: 24px;
@@ -175,110 +165,81 @@
             -webkit-mask-position: center;
         }
 
-        .icon-dashboard { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>'); }
-        .icon-users { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'); }
-        .icon-broadcast { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>'); }
+        .icon-home { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'); }
+        .icon-users { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'); }
+        .icon-topics { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'); }
+        .icon-send { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'); }
 
-        /* Loading Overlay */
-        #loader {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(56, 189, 248, 0.1);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .hidden { display: none; }
-
-        /* Tab Content */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Broadcast Form */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        textarea, input {
+        textarea {
             width: 100%;
-            background: var(--card-bg);
+            background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            color: var(--text-main);
+            border-radius: 20px;
+            padding: 20px;
+            color: var(--text);
             font-family: inherit;
+            margin-bottom: 20px;
+            resize: none;
         }
 
         .btn {
             background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 600;
+            padding: 16px;
+            border-radius: 20px;
             width: 100%;
+            font-weight: 700;
+            font-size: 16px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
         }
 
-        .btn:active {
-            opacity: 0.8;
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
         }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(99, 102, 241, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div id="loader">
-        <div class="spinner"></div>
-    </div>
+    <div id="loader"><div class="spinner"></div></div>
 
     <div class="header">
-        <h1>Antigravity Admin</h1>
-        <p style="font-size: 12px; color: var(--text-muted);">Monitoring IELTS/CEFR Bot</p>
+        <h1>CEFRchi Admin</h1>
+        <p style="font-size: 12px; color: var(--text-muted);">AI Speaking Assistant Control Panel</p>
     </div>
 
     <div class="container">
-        <!-- Dashboard Tab -->
+        <!-- Dashboard -->
         <div id="tab-dashboard" class="tab-content active">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <p class="stat-label">Total Users</p>
+                    <p class="stat-label">Foydalanuvchilar</p>
                     <p id="stat-users" class="stat-value">...</p>
                 </div>
                 <div class="stat-card">
-                    <p class="stat-label">Tests Taken</p>
+                    <p class="stat-label">Sessiyalar</p>
                     <p id="stat-tests" class="stat-value">...</p>
                 </div>
                 <div class="stat-card">
@@ -286,157 +247,146 @@
                     <p id="stat-band" class="stat-value">...</p>
                 </div>
                 <div class="stat-card">
-                    <p class="stat-label">Retention</p>
-                    <p class="stat-value">84%</p>
+                    <p class="stat-label">Active Users</p>
+                    <p class="stat-value" style="color: #10b981;">92%</p>
                 </div>
             </div>
 
-            <div class="chart-container">
-                <h3 class="section-title">Test Activity (7 Days)</h3>
+            <div class="chart-box">
+                <h3 style="font-size: 16px; margin-bottom: 20px;">Haftalik Faollik</h3>
                 <canvas id="activityChart"></canvas>
             </div>
         </div>
 
-        <!-- Users Tab -->
+        <!-- Users -->
         <div id="tab-users" class="tab-content">
-            <h3 class="section-title">Recent Users</h3>
-            <div id="user-list" class="user-list">
-                <!-- Users will be injected here -->
+            <div class="search-box">
+                <input type="text" id="user-search" placeholder="Qidirish (ism yoki username)..." oninput="filterUsers()">
+            </div>
+            <div id="user-list">
+                <!-- Users inject -->
             </div>
         </div>
 
-        <!-- Broadcast Tab -->
+        <!-- Broadcast -->
         <div id="tab-broadcast" class="tab-content">
-            <h3 class="section-title">Send Broadcast</h3>
-            <div class="form-group">
-                <label>Message Content</label>
-                <textarea id="broadcast-text" rows="6" placeholder="Type your message here... (HTML supported)"></textarea>
+            <h3 style="margin-bottom: 20px;">Xabar yuborish</h3>
+            <textarea id="msg-text" rows="8" placeholder="Xabar matnini kiriting... (HTML qo'llab-quvvatlanadi)"></textarea>
+            <button class="btn" onclick="sendBroadcast()">Hammaga yuborish</button>
+        </div>
+    </div>
+
+        <!-- Topics -->
+        <div id="tab-topics" class="tab-content">
+            <h3 style="margin-bottom: 20px;">Yangi Topik qo'shish</h3>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Topik nomi (English)</label>
+                <input type="text" id="topic-name" placeholder="Masalan: Your favorite book">
             </div>
-            <button class="btn" onclick="sendBroadcast()">Send to All Users</button>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Qism (Part)</label>
+                <select id="topic-part" style="width: 100%; background: var(--card); color: white; padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
+                    <option value="1">Part 1</option>
+                    <option value="2">Part 2</option>
+                    <option value="3">Part 3</option>
+                </select>
+            </div>
+            <button class="btn" onclick="addTopic()" style="margin-bottom: 30px;">Qo'shish</button>
+
+            <h3 style="margin-bottom: 15px;">Mavjud Topiklar</h3>
+            <div id="topic-list">
+                <!-- Topics inject -->
+            </div>
         </div>
     </div>
 
     <nav class="nav-bar">
         <a href="javascript:void(0)" class="nav-item active" onclick="showTab('dashboard', this)">
-            <div class="nav-icon icon-dashboard"></div>
-            <span>Dashboard</span>
+            <div class="nav-icon icon-home"></div>
+            <span>Asosiy</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" onclick="showTab('users', this)">
             <div class="nav-icon icon-users"></div>
-            <span>Users</span>
+            <span>A'zolar</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="showTab('topics', this)">
+            <div class="nav-icon icon-topics"></div>
+            <span>Topiklar</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" onclick="showTab('broadcast', this)">
-            <div class="nav-icon icon-broadcast"></div>
-            <span>Broadcast</span>
+            <div class="nav-icon icon-send"></div>
+            <span>Xabar</span>
         </a>
     </nav>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.enableClosingConfirmation();
+        tg.backgroundColor = "#0f172a";
+        tg.headerColor = "#0f172a";
 
-        // API base URL - will be the same as current host
-        const API_BASE = "";
+        let allUsers = [];
 
-        async function fetchData() {
+        async function init() {
             try {
-                const response = await fetch(`${API_BASE}/api/admin/stats`, {
+                const res = await fetch('/api/admin/stats', {
                     headers: { 'X-Telegram-Init-Data': tg.initData }
                 });
-                
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: "Server error " + response.status }));
-                    throw new Error(errorData.error || "Failed to load data");
-                }
-
-                const data = await response.json();
+                const data = await res.json();
                 
                 document.getElementById('stat-users').innerText = data.total_users;
                 document.getElementById('stat-tests').innerText = data.total_tests;
                 document.getElementById('stat-band').innerText = (data.avg_band || 0).toFixed(1);
 
-                initChart(data.daily_activity);
-                
-                const userList = document.getElementById('user-list');
-                userList.innerHTML = data.recent_users.length ? data.recent_users.map(u => `
-                    <div class="user-item">
-                        <div class="user-info">
-                            <h4>${u.full_name || 'No Name'}</h4>
-                            <p>@${u.username || 'no_username'}</p>
-                        </div>
-                        <div class="user-status">${u.level || 'B1'} | ${u.streak || 0}🔥</div>
-                    </div>
-                `).join('') : '<p style="text-align:center; padding:20px; color:var(--text-muted);">No users yet.</p>';
+                allUsers = data.recent_users;
+                renderUsers(allUsers);
+                renderChart(data.daily_activity);
 
                 document.getElementById('loader').classList.add('hidden');
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loader').innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Connection Error</p>
-                        <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">${err.message}</p>
-                        <button class="btn" onclick="location.reload()">Retry</button>
-                    </div>
-                `;
+            } catch (e) {
+                console.error(e);
+                alert("Xatolik yuz berdi!");
             }
         }
 
-
-        function initChart(activityData) {
-            const ctx = document.getElementById('activityChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: activityData.map(d => d.date),
-                    datasets: [{
-                        label: 'Tests',
-                        data: activityData.map(d => d.count),
-                        borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#38bdf8'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
+        function renderUsers(users) {
+            const list = document.getElementById('user-list');
+            list.innerHTML = users.map(u => `
+                <div class="user-card">
+                    <div class="user-info">
+                        <h4>${u.full_name}</h4>
+                        <p>@${u.username || '—'} | ${u.level || 'B1'}</p>
+                    </div>
+                    <div class="user-badge">${u.exam || 'CEFR'}</div>
+                </div>
+            `).join('');
         }
 
-        function showTab(tabId, el) {
+        function filterUsers() {
+            const q = document.getElementById('user-search').value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                u.full_name.toLowerCase().includes(q) || 
+                (u.username && u.username.toLowerCase().includes(q))
+            );
+            renderUsers(filtered);
+        }
+
+        function showTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
-            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`tab-${id}`).classList.add('active');
             el.classList.add('active');
-            
-            tg.HapticFeedback.impactOccurred('light');
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
         async function sendBroadcast() {
-            const text = document.getElementById('broadcast-text').value;
-            if (!text) return tg.showAlert("Please enter a message!");
+            const text = document.getElementById('msg-text').value;
+            if(!text) return tg.showAlert("Matn kiriting!");
             
-            tg.showConfirm("Are you sure you want to send this broadcast to all users?", async (ok) => {
-                if (ok) {
+            tg.showConfirm("Haqiqatan ham barcha foydalanuvchilarga xabar yubormoqchimisiz?", async (ok) => {
+                if(ok) {
                     try {
-                        const response = await fetch(`${API_BASE}/api/admin/broadcast`, {
+                        const res = await fetch('/api/admin/broadcast', {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json',
@@ -444,18 +394,87 @@
                             },
                             body: JSON.stringify({ text })
                         });
-                        const res = await response.json();
-                        tg.showAlert(`Broadcast started! Target: ${res.count} users.`);
-                        document.getElementById('broadcast-text').value = "";
-                    } catch (err) {
-                        tg.showAlert("Failed to send broadcast.");
+                        const data = await res.json();
+                        tg.showAlert(`Xabar yuborildi! Jami: ${data.count} kishi.`);
+                        document.getElementById('msg-text').value = "";
+                    } catch(e) {
+                        tg.showAlert("Xatolik!");
                     }
                 }
             });
         }
 
-        // Initial load
-        window.onload = fetchData;
+        function renderChart(data) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.date),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        async function addTopic() {
+            const name = document.getElementById('topic-name').value;
+            const part = document.getElementById('topic-part').value;
+            if(!name) return tg.showAlert("Nomini kiriting!");
+
+            try {
+                const res = await fetch('/api/admin/topics', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Telegram-Init-Data': tg.initData 
+                    },
+                    body: JSON.stringify({ topic: name, part: parseInt(part) })
+                });
+                if(res.ok) {
+                    tg.showAlert("Topik qo'shildi!");
+                    document.getElementById('topic-name').value = "";
+                    fetchTopics();
+                }
+            } catch(e) { tg.showAlert("Xatolik!"); }
+        }
+
+        async function fetchTopics() {
+            try {
+                const res = await fetch('/api/admin/topics', {
+                    headers: { 'X-Telegram-Init-Data': tg.initData }
+                });
+                const data = await res.json();
+                const list = document.getElementById('topic-list');
+                list.innerHTML = data.map(t => `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <h4>${t.topic}</h4>
+                            <p>Part ${t.part}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {}
+        }
+
+        window.onload = () => {
+            init();
+            fetchTopics();
+        };
     </script>
 </body>
 </html>

@@ -5,6 +5,9 @@ import hashlib
 import hmac
 import urllib.parse
 from config import BOT_TOKEN, ADMIN_IDS
+from aiogram import Bot
+
+bot = Bot(token=BOT_TOKEN)
 
 def validate_init_data(init_data: str, bot_token: str):
     try:
@@ -28,8 +31,6 @@ def validate_init_data(init_data: str, bot_token: str):
 
 async def get_stats(request):
     init_data = request.headers.get('X-Telegram-Init-Data')
-    
-    # CORS uchun headerlar
     headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -40,22 +41,21 @@ async def get_stats(request):
         return web.Response(headers=headers)
 
     if not validate_init_data(init_data, BOT_TOKEN):
-        return web.json_response({"error": "Unauthorized. Please open via Telegram Bot."}, status=403, headers=headers)
+        return web.json_response({"error": "Unauthorized"}, status=403, headers=headers)
         
     try:
         total_users, total_tests, avg_band = db.get_stats()
         daily_stats = db.get_daily_stats()
-        recent_users = db.get_all_users()[:20]
+        all_users = db.get_all_users()
         
         daily_activity = [{"date": s[0], "count": s[1]} for s in daily_stats]
-        users = [{"tg_id": u[0], "username": u[1], "full_name": u[2], "level": u[4], "streak": u[8]} for u in recent_users]
-            
+        
         return web.json_response({
             "total_users": total_users,
             "total_tests": total_tests,
             "avg_band": avg_band,
             "daily_activity": daily_activity,
-            "recent_users": users
+            "recent_users": all_users[:50] # Top 50 recent
         }, headers=headers)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500, headers=headers)
@@ -68,17 +68,53 @@ async def broadcast(request):
         return web.json_response({"error": "Unauthorized"}, status=403, headers=headers)
         
     data = await request.json()
-    return web.json_response({"status": "ok", "count": 0}, headers=headers)
+    text = data.get('text')
+    if not text:
+        return web.json_response({"error": "No text provided"}, status=400, headers=headers)
+
+    users = db.get_all_users()
+    count = 0
+    for user in users:
+        try:
+            await bot.send_message(user['tg_id'], text, parse_mode="HTML")
+            count += 1
+        except:
+            pass
+            
+    return web.json_response({"status": "ok", "count": count}, headers=headers)
+
+async def topics_api(request):
+    init_data = request.headers.get('X-Telegram-Init-Data')
+    headers = {"Access-Control-Allow-Origin": "*"}
+    
+    if not validate_init_data(init_data, BOT_TOKEN):
+        return web.json_response({"error": "Unauthorized"}, status=403, headers=headers)
+        
+    if request.method == "GET":
+        topics = db.get_all_topics()
+        # Transform rows to dicts
+        topics_list = [{"id": t[0], "part": t[1], "level": t[2], "exam": t[3], "topic": t[4]} for t in topics]
+        return web.json_response(topics_list, headers=headers)
+    
+    elif request.method == "POST":
+        data = await request.json()
+        topic = data.get('topic')
+        part = data.get('part', 1)
+        if not topic:
+            return web.json_response({"error": "No topic provided"}, status=400, headers=headers)
+        
+        db.add_topic(part, 'ALL', 'ALL', topic, 0)
+        return web.json_response({"status": "ok"}, headers=headers)
 
 async def index(request):
     return web.FileResponse('static/admin_webapp.html')
 
 def create_app():
-
     app = web.Application()
     app.router.add_get('/', index)
     app.router.add_route('*', '/api/admin/stats', get_stats)
     app.router.add_route('*', '/api/admin/broadcast', broadcast)
+    app.router.add_route('*', '/api/admin/topics', topics_api)
     app.router.add_static('/static/', path='static', name='static')
     return app
 

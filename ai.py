@@ -25,17 +25,23 @@ async def transcribe(audio_path: str) -> str:
 
 import json
 
-async def get_feedback(transcript: str, topic: str, lang: str) -> dict:
+async def get_feedback(transcript: str, topic: str, lang: str, part: int = 1) -> dict:
     try:
+        # Part-specific instruction
+        part_instruction = f"This is Part {part} of the Speaking test."
+        if part == 2:
+            part_instruction += " This was a long monologue (cue card)."
+        elif part == 3:
+            part_instruction += " This was an abstract discussion."
+
         with open("speaking_prompt.txt", "r", encoding="utf-8") as f:
             system_prompt = f.read().replace("{LANG}", lang)
 
-        full_prompt = f"{system_prompt}\n\nTOPIC: {topic}\nTRANSCRIPT: {transcript}"
+        full_prompt = f"{system_prompt}\n\nCONTEXT: {part_instruction}\nTOPIC: {topic}\nTRANSCRIPT: {transcript}"
         
         response = model.generate_content(full_prompt)
         text = response.text.strip()
         
-        # Clean markdown code blocks if present
         if text.startswith("```json"):
             text = text[7:-3].strip()
         elif text.startswith("```"):
@@ -46,20 +52,24 @@ async def get_feedback(transcript: str, topic: str, lang: str) -> dict:
         if "error" in data:
             return {"error": data['error'], "band": "—", "cefr": "—", "feedback": data['error'], "grammar": "", "vocab": ""}
 
+        # Star mapping for visual feedback
+        def get_stars(score):
+            try:
+                s = float(score)
+                filled = round(s / 2) # 9 band scale to 5 stars
+                return "★" * filled + "☆" * (5 - filled)
+            except:
+                return "☆☆☆☆☆"
+
         # Format feedback text for Telegram
-        fb = f"🎯 <b>IELTS Band: {data['overall_band']}/9</b>\n"
-        fb += f"📊 <b>CEFR Level: {data['cefr_level']}</b>\n\n"
-        fb += f"━━━━━━━━━━━━━━━━━━━━━━\n"
-        fb += f"{data['detailed_feedback']}\n\n"
+        fb = f"📊 <b>Sessiya natijalari:</b>\n"
+        fb += f"  Ravonlik (Fluency):      [{get_stars(data['scores']['fluency'])}]\n"
+        fb += f"  Lug'at (Vocabulary):     [{get_stars(data['scores']['lexical'])}]\n"
+        fb += f"  Grammatika (Grammar):    [{get_stars(data['scores']['grammar'])}]\n"
+        fb += f"  Izchillik (Coherence):   [{get_stars(data['scores'].get('coherence', data['scores']['fluency']))}]\n\n"
         
-        fb += "✅ <b>Ballar:</b>\n"
-        fb += f"• Fluency: {data['scores']['fluency']}/9\n"
-        fb += f"• Lexical: {data['scores']['lexical']}/9\n"
-        fb += f"• Grammar: {data['scores']['grammar']}/9\n"
-        fb += f"• Pronunciation: {data['scores']['pronunciation']}/9\n\n"
-        
-        fb += "💡 <b>Asosiy maslahat:</b>\n"
-        fb += f"<i>{data['key_tip']}</i>"
+        fb += f"Taxminiy daraja: {data['cefr_level']} / IELTS ~{data['overall_band']}\n\n"
+        fb += f"💡 <b>Tavsiya:</b> {data['key_tip']}"
 
         grammar_tips = "\n".join([f"• {x}" for x in data.get('grammar_corrections', [])])
         vocab_tips = "\n".join([f"• {x}" for x in data.get('vocabulary_suggestions', [])])
@@ -76,6 +86,28 @@ async def get_feedback(transcript: str, topic: str, lang: str) -> dict:
         print(f"Feedback Error: {e}")
         return {"error": str(e), "band": "—", "cefr": "—", "feedback": f"Xatolik: {e}", "grammar": "", "vocab": ""}
 
+async def detect_level(transcripts: list) -> str:
+    """Detect user level based on 3 speaking answers"""
+    try:
+        combined_text = "\n\n".join([f"Q{i+1}: {t}" for i, t in enumerate(transcripts)])
+        prompt = f"""
+        Analyze these 3 English speaking answers and determine the CEFR level (A1, A2, B1, B2, C1, or C2).
+        Be realistic. If answers are very short, it's A1 or A2.
+        
+        ANSWERS:
+        {combined_text}
+        
+        Return ONLY the level (e.g., B2).
+        """
+        response = model.generate_content(prompt)
+        level = response.text.strip()
+        # Ensure it's a valid level
+        for l in ['C2', 'C1', 'B2', 'B1', 'A2', 'A1']:
+            if l in level:
+                return l
+        return "B1" # Default
+    except:
+        return "B1"
 
 def progress_bar(score_str: str) -> str:
     try:
@@ -85,3 +117,4 @@ def progress_bar(score_str: str) -> str:
         return "█" * filled + "░" * empty
     except:
         return "░" * 9
+

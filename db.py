@@ -6,18 +6,31 @@ def init():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     
-    # Users jadvali
+    # Users jadvali yangilandi
     c.execute("""CREATE TABLE IF NOT EXISTS users (
         tg_id INTEGER PRIMARY KEY,
         username TEXT,
         full_name TEXT,
         lang TEXT DEFAULT 'uz',
+        age INTEGER,
+        interests TEXT,
         level TEXT DEFAULT 'B1',
         exam TEXT DEFAULT 'IELTS',
+        source TEXT,
         registered_at TEXT,
         is_blocked INTEGER DEFAULT 0,
         streak INTEGER DEFAULT 0,
         last_activity TEXT
+    )""")
+    
+    # Sessions jadvali - speaking test jarayonini kuzatish uchun
+    c.execute("""CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tg_id INTEGER,
+        part INTEGER DEFAULT 1,
+        topic_id INTEGER,
+        status TEXT DEFAULT 'active',
+        created_at TEXT
     )""")
     
     # Topics jadvali
@@ -50,26 +63,35 @@ def init():
     conn.close()
 
 # Foydalanuvchi operatsiyalari
-def add_user(tg_id, username, full_name, lang, level, exam):
+def add_user(tg_id, username, full_name, lang, age, interests, level, exam, source):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    c.execute("INSERT OR IGNORE INTO users (tg_id, username, full_name, lang, level, exam, registered_at, last_activity) VALUES (?,?,?,?,?,?,?,?)",
-              (tg_id, username, full_name, lang, level, exam, date, date))
+    # Agar foydalanuvchi mavjud bo'lsa, ma'lumotlarini yangilaymiz
+    c.execute("""
+        INSERT INTO users (tg_id, username, full_name, lang, age, interests, level, exam, source, registered_at, last_activity)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(tg_id) DO UPDATE SET
+        username=excluded.username,
+        full_name=excluded.full_name,
+        lang=excluded.lang,
+        age=excluded.age,
+        interests=excluded.interests,
+        level=excluded.level,
+        exam=excluded.exam,
+        source=excluded.source,
+        last_activity=excluded.last_activity
+    """, (tg_id, username, full_name, lang, age, interests, level, exam, source, date, date))
     conn.commit()
     conn.close()
 
 def get_user(tg_id):
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     row = conn.execute("SELECT * FROM users WHERE tg_id=?", (tg_id,)).fetchone()
     conn.close()
     if row:
-        return {
-            "tg_id": row[0], "username": row[1], "full_name": row[2],
-            "lang": row[3], "level": row[4], "exam": row[5],
-            "registered_at": row[6], "is_blocked": row[7],
-            "streak": row[8], "last_activity": row[9]
-        }
+        return dict(row)
     return None
 
 def update_streak(tg_id):
@@ -167,7 +189,6 @@ def get_stats():
 
 def get_daily_stats():
     conn = sqlite3.connect(DB_PATH)
-    # Oxirgi 7 kundagi testlar soni
     rows = conn.execute("""
         SELECT date(date) as d, COUNT(*) 
         FROM results 
@@ -179,8 +200,10 @@ def get_daily_stats():
 
 def get_all_users():
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     rows = conn.execute("SELECT * FROM users ORDER BY registered_at DESC").fetchall()
     conn.close()
-    return rows
+    return [dict(r) for r in rows]
+
 
 
