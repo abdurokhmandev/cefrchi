@@ -148,8 +148,8 @@ def create_app():
     app.router.add_post('/login', login_api)
     app.router.add_get('/logout', logout)
     app.router.add_get('/admin', admin_page)
-    app.router.add_get('/api/admin/stats', get_stats)
-    app.router.add_post('/api/admin/broadcast', broadcast)
+    app.router.add_route('*', '/api/admin/stats', get_stats)
+    app.router.add_route('*', '/api/admin/broadcast', broadcast)
     app.router.add_route('*', '/api/admin/topics', topics_api)
     app.router.add_static('/static/', path='static', name='static')
     return app
