@@ -6,6 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 from utils import db, ai
 from keyboards import keyboards as kb
 from utils.i18n import t
+from config import ADMIN_IDS
 import os
 
 router = Router()
@@ -20,23 +21,25 @@ class Registration(StatesGroup):
     exam = State()
     source = State()
 
-async def clear_messages(message: Message, state: FSMContext):
-    data = await state.get_data()
-    msg_ids = data.get('msg_ids', [])
-    for msg_id in msg_ids:
-        try:
-            await message.bot.delete_message(message.chat.id, msg_id)
-        except:
-            pass
-    await state.update_data(msg_ids=[])
-
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext, user):
+    user_id = message.from_user.id
+    
+    # Agar foydalanuvchi bazada bo'lsa
     if user:
         welcome = t('main_menu_msg', user['lang'], name=user['full_name'])
         await message.answer(welcome, reply_markup=kb.main_menu(user['lang']))
         return
+
+    # Agar foydalanuvchi bazada bo'lmasa-yu, lekin ADMIN bo'lsa
+    if user_id in ADMIN_IDS:
+        # Adminni foydalanuvchi sifatida ham vaqtincha bazaga qo'shib qo'yamiz (agar xohlasa ro'yxatdan o'tadi)
+        # Lekin hozircha unga menyuni ko'rsatamiz
+        await message.answer("Xush kelibsiz, Admin! 👑\nSiz ro'yxatdan o'tmagansiz, lekin admin huquqingiz bor.", reply_markup=kb.main_menu('uz'))
+        return
     
+    # Yangi foydalanuvchi uchun ro'yxatdan o'tish
+    await state.clear()
     msg = await message.answer(t('welcome', 'uz'), reply_markup=kb.start_kb('uz'))
     await state.update_data(msg_ids=[msg.message_id])
 
@@ -47,10 +50,7 @@ async def start_reg(cb: CallbackQuery, state: FSMContext):
 
 @router.callback_query(Registration.lang, F.data.startswith("lang_"))
 async def reg_lang(cb: CallbackQuery, state: FSMContext):
-    try:
-        lang = cb.data.split("_")[1]
-    except IndexError:
-        lang = "uz"
+    lang = cb.data.split("_")[1]
     await state.update_data(lang=lang)
     await state.set_state(Registration.full_name)
     await cb.message.edit_text(t('step_name', lang))
@@ -71,8 +71,7 @@ async def reg_name(message: Message, state: FSMContext):
 @router.message(Registration.age)
 async def reg_age(message: Message, state: FSMContext):
     if not message.text.isdigit():
-        data = await state.get_data()
-        await message.answer("Iltimos, raqam kiriting / Please enter a number:")
+        await message.answer("Iltimos, raqam kiriting:")
         return
     
     await state.update_data(age=int(message.text))
@@ -95,26 +94,21 @@ async def reg_interests(cb: CallbackQuery, state: FSMContext):
     
     if code == "ready":
         if not selected:
-            await cb.answer("Kamida bittasini tanlang / Select at least one", show_alert=True)
+            await cb.answer("Kamida bittasini tanlang", show_alert=True)
             return
         await state.set_state(Registration.level)
         await cb.message.edit_text(t('step_level', lang), reply_markup=kb.level_kb(lang))
         return
 
-    if code in selected:
-        selected.remove(code)
-    else:
-        selected.append(code)
+    if code in selected: selected.remove(code)
+    else: selected.append(code)
     
     await state.update_data(selected_interests=selected)
     await cb.message.edit_reply_markup(reply_markup=kb.interests_kb(lang, selected))
 
 @router.callback_query(Registration.level, F.data.startswith("level_"))
 async def reg_level(cb: CallbackQuery, state: FSMContext):
-    try:
-        level = cb.data.split("_")[1]
-    except IndexError:
-        level = "B1"
+    level = cb.data.split("_")[1]
     data = await state.get_data()
     lang = data['lang']
     
@@ -122,7 +116,6 @@ async def reg_level(cb: CallbackQuery, state: FSMContext):
         await state.set_state(Registration.level_test)
         await state.update_data(test_step=0, test_answers=[])
         await cb.message.edit_text(t('level_test_start', lang))
-        # First question
         msg = await cb.message.answer("1. Tell me about your hometown.")
         data['msg_ids'].append(msg.message_id)
         await state.update_data(msg_ids=data['msg_ids'])
@@ -141,7 +134,6 @@ async def reg_level_test(message: Message, state: FSMContext):
     msg_ids = data.get('msg_ids', [])
     msg_ids.append(message.message_id)
 
-    # Transcribe
     file_id = message.voice.file_id
     file = await message.bot.get_file(file_id)
     file_path = f"voices/test_{file_id}.ogg"
@@ -159,8 +151,7 @@ async def reg_level_test(message: Message, state: FSMContext):
         msg_ids.append(msg.message_id)
         await state.update_data(test_step=step, test_answers=answers, msg_ids=msg_ids)
     else:
-        # End test
-        wait_msg = await message.answer("⏳ Processing your level...")
+        wait_msg = await message.answer("⏳ Processing...")
         msg_ids.append(wait_msg.message_id)
         detected_level = await ai.detect_level(answers)
         await wait_msg.edit_text(t('level_result', lang, level=detected_level))
@@ -173,10 +164,7 @@ async def reg_level_test(message: Message, state: FSMContext):
 
 @router.callback_query(Registration.exam, F.data.startswith("exam_"))
 async def reg_exam(cb: CallbackQuery, state: FSMContext):
-    try:
-        exam = cb.data.split("_")[1]
-    except IndexError:
-        exam = "IELTS"
+    exam = cb.data.split("_")[1]
     await state.update_data(exam=exam)
     data = await state.get_data()
     lang = data['lang']
@@ -185,32 +173,26 @@ async def reg_exam(cb: CallbackQuery, state: FSMContext):
 
 @router.callback_query(Registration.source, F.data.startswith("source_"))
 async def reg_source(cb: CallbackQuery, state: FSMContext):
-    try:
-        source = cb.data.split("_")[1]
-    except IndexError:
-        source = "other"
-    
+    source = cb.data.split("_")[1]
     data = await state.get_data()
     lang = data['lang']
     
-    # Save to DB
+    # Bazaga saqlash
     interests_str = ",".join(data['selected_interests'])
     db.add_user(
         cb.from_user.id, cb.from_user.username, data['full_name'], 
-        data['lang'], data['age'], interests_str, data['level'], 
+        lang, data['age'], interests_str, data['level'], 
         data['exam'], source
     )
     
-    # Cleanup messages
+    # Xabarlarni tozalash
     msg_ids = data.get('msg_ids', [])
     for msg_id in msg_ids:
-        try:
-            await cb.bot.delete_message(cb.message.chat.id, msg_id)
-        except:
-            pass
+        try: await cb.bot.delete_message(cb.message.chat.id, msg_id)
+        except: pass
             
     await state.clear()
     
-    # Show Main Menu
+    # Menyu ko'rsatish
     welcome = t('reg_done', lang) + "\n\n" + t('main_menu_msg', lang, name=data['full_name'])
     await cb.message.answer(welcome, reply_markup=kb.main_menu(lang))

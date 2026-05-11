@@ -146,6 +146,15 @@ TEXTS = {
     }
 }
 
+# Missing keys addition
+for lang in TEXTS:
+    if lang == 'uz':
+        TEXTS[lang]['reg_done'] = "✅ Tabriklaymiz! Ro'yxatdan muvaffaqiyatli o'tdingiz."
+    elif lang == 'en':
+        TEXTS[lang]['reg_done'] = "✅ Congratulations! You have successfully registered."
+    else:
+        TEXTS[lang]['reg_done'] = "✅ Поздравляем! Вы успешно зарегистрировались."
+
 def t(key, lang='uz', **kwargs):
     text = TEXTS.get(lang, TEXTS['uz']).get(key, key)
     return text.format(**kwargs) if kwargs else text
