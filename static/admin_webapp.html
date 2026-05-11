@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --accent: #f472b6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .header {
+            padding: 24px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            padding: 0 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:active {
+            transform: scale(0.98);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .user-item {
+            background: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info h4 {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .user-status {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--primary);
+        }
+
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 10px;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            background: currentColor;
+            -webkit-mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+        }
+
+        .icon-dashboard { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>'); }
+        .icon-users { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'); }
+        .icon-broadcast { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>'); }
+
+        /* Loading Overlay */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(56, 189, 248, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none; }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Broadcast Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        textarea, input {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="header">
+        <h1>Antigravity Admin</h1>
+        <p style="font-size: 12px; color: var(--text-muted);">Monitoring IELTS/CEFR Bot</p>
+    </div>
+
+    <div class="container">
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <p class="stat-label">Total Users</p>
+                    <p id="stat-users" class="stat-value">...</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Tests Taken</p>
+                    <p id="stat-tests" class="stat-value">...</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Avg. Band</p>
+                    <p id="stat-band" class="stat-value">...</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Retention</p>
+                    <p class="stat-value">84%</p>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="section-title">Test Activity (7 Days)</h3>
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="tab-users" class="tab-content">
+            <h3 class="section-title">Recent Users</h3>
+            <div id="user-list" class="user-list">
+                <!-- Users will be injected here -->
+            </div>
+        </div>
+
+        <!-- Broadcast Tab -->
+        <div id="tab-broadcast" class="tab-content">
+            <h3 class="section-title">Send Broadcast</h3>
+            <div class="form-group">
+                <label>Message Content</label>
+                <textarea id="broadcast-text" rows="6" placeholder="Type your message here... (HTML supported)"></textarea>
+            </div>
+            <button class="btn" onclick="sendBroadcast()">Send to All Users</button>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="javascript:void(0)" class="nav-item active" onclick="showTab('dashboard', this)">
+            <div class="nav-icon icon-dashboard"></div>
+            <span>Dashboard</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="showTab('users', this)">
+            <div class="nav-icon icon-users"></div>
+            <span>Users</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="showTab('broadcast', this)">
+            <div class="nav-icon icon-broadcast"></div>
+            <span>Broadcast</span>
+        </a>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+
+        // API base URL - will be the same as current host
+        const API_BASE = "";
+
+        async function fetchData() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/stats`, {
+                    headers: { 'X-Telegram-Init-Data': tg.initData }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: "Server error " + response.status }));
+                    throw new Error(errorData.error || "Failed to load data");
+                }
+
+                const data = await response.json();
+                
+                document.getElementById('stat-users').innerText = data.total_users;
+                document.getElementById('stat-tests').innerText = data.total_tests;
+                document.getElementById('stat-band').innerText = (data.avg_band || 0).toFixed(1);
+
+                initChart(data.daily_activity);
+                
+                const userList = document.getElementById('user-list');
+                userList.innerHTML = data.recent_users.length ? data.recent_users.map(u => `
+                    <div class="user-item">
+                        <div class="user-info">
+                            <h4>${u.full_name || 'No Name'}</h4>
+                            <p>@${u.username || 'no_username'}</p>
+                        </div>
+                        <div class="user-status">${u.level || 'B1'} | ${u.streak || 0}🔥</div>
+                    </div>
+                `).join('') : '<p style="text-align:center; padding:20px; color:var(--text-muted);">No users yet.</p>';
+
+                document.getElementById('loader').classList.add('hidden');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loader').innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Connection Error</p>
+                        <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">${err.message}</p>
+                        <button class="btn" onclick="location.reload()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+
+        function initChart(activityData) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: activityData.map(d => d.date),
+                    datasets: [{
+                        label: 'Tests',
+                        data: activityData.map(d => d.count),
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#38bdf8'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            el.classList.add('active');
+            
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        async function sendBroadcast() {
+            const text = document.getElementById('broadcast-text').value;
+            if (!text) return tg.showAlert("Please enter a message!");
+            
+            tg.showConfirm("Are you sure you want to send this broadcast to all users?", async (ok) => {
+                if (ok) {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/admin/broadcast`, {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-Telegram-Init-Data': tg.initData 
+                            },
+                            body: JSON.stringify({ text })
+                        });
+                        const res = await response.json();
+                        tg.showAlert(`Broadcast started! Target: ${res.count} users.`);
+                        document.getElementById('broadcast-text').value = "";
+                    } catch (err) {
+                        tg.showAlert("Failed to send broadcast.");
+                    }
+                }
+            });
+        }
+
+        // Initial load
+        window.onload = fetchData;
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[
+  {"id": 1, "part": 1, "topic": "Describe your hometown. What do you like most about it?"},
+  {"id": 2, "part": 1, "topic": "Do you enjoy cooking? Why or why not?"},
+  {"id": 3, "part": 1, "topic": "How do you usually spend your free time?"},
+  {"id": 4, "part": 1, "topic": "What kind of music do you enjoy and why?"},
+  {"id": 5, "part": 1, "topic": "Do you prefer reading books or watching films? Why?"},
+  {"id": 6, "part": 1, "topic": "What is your favourite season and why?"},
+  {"id": 7, "part": 2, "topic": "Describe a memorable trip you have taken.\n• Where you went\n• Who you went with\n• What you did\n• Why it was memorable"},
+  {"id": 8, "part": 2, "topic": "Describe a person who has influenced you greatly.\n• Who they are\n• How you know them\n• What they did\n• Why their influence matters"},
+  {"id": 9, "part": 2, "topic": "Describe a skill you would like to learn.\n• What it is\n• Why you want to learn it\n• How you would learn it\n• How it would help you"},
+  {"id": 10, "part": 3, "topic": "How has technology changed the way people communicate?"},
+  {"id": 11, "part": 3, "topic": "Should environmental education be compulsory in schools?"},
+  {"id": 12, "part": 3, "topic": "What are the pros and cons of living in a big city?"},
+  {"id": 13, "part": 3, "topic": "Does social media have a positive or negative effect on society?"},
+  {"id": 14, "part": 3, "topic": "How important is learning a foreign language today?"}
+]
