@@ -2,6 +2,7 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 import db
 import keyboards as kb
+from i18n import t
 
 router = Router()
 

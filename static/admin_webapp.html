@@ -325,11 +325,16 @@
         tg.backgroundColor = "#0f172a";
         tg.headerColor = "#0f172a";
 
+        // AGAR WEB APP VA BOT BOSHQARUV SERVERNIZ ALOHIDA BO'LSA, 
+        // BU YERGA BOT BACKEND URL MANZILINI YOZING (oxirida / bo'lmasin)
+        // Masalan: "https://sizning-botingiz.up.railway.app"
+        const API_BASE = ""; 
+
         let allUsers = [];
 
         async function init() {
             try {
-                const res = await fetch('/api/admin/stats', {
+                const res = await fetch(`${API_BASE}/api/admin/stats`, {
                     headers: { 'X-Telegram-Init-Data': tg.initData }
                 });
                 
@@ -399,7 +404,7 @@
             tg.showConfirm("Haqiqatan ham barcha foydalanuvchilarga xabar yubormoqchimisiz?", async (ok) => {
                 if(ok) {
                     try {
-                        const res = await fetch('/api/admin/broadcast', {
+                        const res = await fetch(`${API_BASE}/api/admin/broadcast`, {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json',
@@ -450,7 +455,7 @@
             if(!name) return tg.showAlert("Nomini kiriting!");
 
             try {
-                const res = await fetch('/api/admin/topics', {
+                const res = await fetch(`${API_BASE}/api/admin/topics`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -468,7 +473,7 @@
 
         async function fetchTopics() {
             try {
-                const res = await fetch('/api/admin/topics', {
+                const res = await fetch(`${API_BASE}/api/admin/topics`, {
                     headers: { 'X-Telegram-Init-Data': tg.initData }
                 });
                 const data = await res.json();

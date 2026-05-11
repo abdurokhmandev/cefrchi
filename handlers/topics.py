@@ -8,8 +8,9 @@ router = Router()
 
 @router.callback_query(F.data == "topic")
 async def select_exam(cb: CallbackQuery, user):
-    text = "🎯 Qaysi turdagi topik kerak?" if user['lang'] == 'uz' else "🎯 Which type of topic?"
-    await cb.message.edit_text(text, reply_markup=kb.exam_kb())
+    lang = user['lang']
+    text = "🎯 Qaysi turdagi topik kerak?" if lang == 'uz' else "🎯 Which type of topic?"
+    await cb.message.edit_text(text, reply_markup=kb.exam_kb(lang))
 
 @router.callback_query(F.data.startswith("exam_"))
 async def select_part(cb: CallbackQuery, user):

@@ -192,6 +192,7 @@ async def reg_source(cb: CallbackQuery, state: FSMContext):
         source = "other"
     
     data = await state.get_data()
+    lang = data['lang']
     
     # Save to DB
     interests_str = ",".join(data['selected_interests'])
@@ -201,9 +202,16 @@ async def reg_source(cb: CallbackQuery, state: FSMContext):
         data['exam'], source
     )
     
-    # Clean messages
-    await clear_messages(cb.message, state)
-    
-    welcome = t('main_menu_msg', data['lang'], name=data['full_name'])
-    await cb.message.edit_text(welcome, reply_markup=kb.main_menu(data['lang']))
+    # Cleanup messages
+    msg_ids = data.get('msg_ids', [])
+    for msg_id in msg_ids:
+        try:
+            await cb.bot.delete_message(cb.message.chat.id, msg_id)
+        except:
+            pass
+            
     await state.clear()
+    
+    # Show Main Menu
+    welcome = t('reg_done', lang) + "\n\n" + t('main_menu_msg', lang, name=data['full_name'])
+    await cb.message.answer(welcome, reply_markup=kb.main_menu(lang))
