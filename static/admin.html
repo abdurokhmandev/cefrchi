@@ -1,331 +1,633 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Dashboard | CEFRchi AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1; --secondary: #a855f7; --accent: #00d2ff;
-            --bg: #030712; --sidebar: #0b0f1a; --card: rgba(17, 24, 39, 0.7);
-            --border: rgba(255, 255, 255, 0.08); --text: #f8fafc; --text-muted: #94a3b8;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEFRchi AI — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
+:root{
+  --bg:#06070d;
+  --s1:#0c0e18;
+  --s2:#111425;
+  --border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.12);
+  --text:#e8eaf0;
+  --muted:#5a6180;
+  --accent:#c8f264;
+  --accent2:#7b6cff;
+  --accent3:#ff6b6b;
+  --accent4:#42d9c8;
+  --glow:rgba(200,242,100,0.15);
+}
 
-        /* Sidebar Style */
-        .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 40px 20px; position: fixed; height: 100vh; z-index: 100; transition: 0.3s; }
-        .logo { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 50px; text-align: center; }
-        .nav-item { display: flex; align-items: center; padding: 15px 20px; color: var(--text-muted); text-decoration: none; border-radius: 18px; margin-bottom: 8px; transition: 0.3s; cursor: pointer; font-weight: 500; font-size: 15px; }
-        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
-        .nav-item i { margin-right: 15px; font-size: 18px; }
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
 
-        /* Main Content Style */
-        .main { margin-left: 280px; flex: 1; padding: 40px; position: relative; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .header-top h2 { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; }
+/* ═══════════ SIDEBAR ═══════════ */
+.sidebar{
+  width:260px;min-width:260px;background:var(--s1);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:32px 20px;position:fixed;height:100vh;
+  z-index:100;
+}
 
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-bottom: 40px; }
-        .stat-card { background: var(--card); backdrop-filter: blur(20px); padding: 25px; border-radius: 25px; border: 1px solid var(--border); position: relative; overflow: hidden; }
-        .stat-card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
-        .stat-card.purple::after { background: var(--secondary); }
-        .stat-card.blue::after { background: var(--accent); }
-        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        .stat-value { font-size: 32px; font-weight: 800; font-family: 'Outfit', sans-serif; }
+.logo-wrap{display:flex;align-items:center;gap:10px;margin-bottom:48px;padding:0 8px;}
+.logo-mark{
+  width:36px;height:36px;background:var(--accent);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#06070d;font-weight:800;flex-shrink:0;
+}
+.logo-text{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-0.3px;}
+.logo-text span{color:var(--accent);}
 
-        /* Tables & Content */
-        .card { background: var(--card); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid var(--border); padding: 30px; margin-bottom: 30px; }
-        .card h3 { font-family: 'Outfit', sans-serif; margin-bottom: 25px; font-size: 20px; }
-        
-        .search-bar { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 15px 25px; border-radius: 18px; color: white; margin-bottom: 25px; font-family: inherit; }
-        .search-bar:focus { outline: none; border-color: var(--primary); }
+.nav-label{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0 12px;margin-bottom:10px;margin-top:8px;}
 
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; }
-        td { padding: 20px 15px; border-top: 1px solid var(--border); font-size: 14px; }
-        .badge { padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .badge-ielts { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
-        .badge-cefr { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;color:var(--muted);
+  border-radius:10px;margin-bottom:4px;
+  cursor:pointer;font-weight:500;font-size:14px;
+  transition:all 0.2s;position:relative;
+  border:1px solid transparent;
+}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text);border-color:var(--border);}
+.nav-item.active{
+  background:rgba(200,242,100,0.07);
+  color:var(--accent);border-color:rgba(200,242,100,0.18);
+}
+.nav-item.active .nav-dot{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:transparent;transition:all 0.2s;}
+.nav-icon{font-size:16px;width:18px;text-align:center;}
 
-        /* Tab Management */
-        .tab-page { display: none; animation: slideUp 0.5s ease-out; }
-        .tab-page.active { display: block; }
-        @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+.sidebar-footer{margin-top:auto;padding:16px;background:rgba(255,82,82,0.06);border:1px solid rgba(255,82,82,0.12);border-radius:12px;}
+.sidebar-footer a{color:#ff6b6b;text-decoration:none;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
 
-        /* Form Elements */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 10px; font-size: 14px; color: var(--text-muted); }
-        select, textarea, input[type="text"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 16px; border-radius: 18px; color: white; font-family: inherit; }
-        .btn-action { background: linear-gradient(to right, var(--primary), var(--secondary)); border: none; color: white; padding: 16px 30px; border-radius: 18px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
-        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
+/* ═══════════ MAIN ═══════════ */
+.main{margin-left:260px;flex:1;padding:40px 48px;min-height:100vh;}
 
-        /* Loader */
-        #loader { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 10000; transition: 0.5s; }
-        .spinner { width: 50px; height: 50px; border: 4px solid var(--glass-border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .hidden { opacity: 0; pointer-events: none; }
-    </style>
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;}
+.topbar-left h1{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;letter-spacing:-0.5px;line-height:1.1;}
+.topbar-left p{color:var(--muted);font-size:14px;margin-top:6px;}
+.time-chip{
+  background:var(--s2);border:1px solid var(--border);
+  padding:8px 18px;border-radius:50px;font-size:13px;
+  color:var(--muted);font-family:'DM Mono',monospace;
+}
+
+/* ═══════════ STATS ROW ═══════════ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px;}
+
+.stat-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:18px;padding:24px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.3s;cursor:default;
+}
+.stat-card:hover{border-color:var(--border2);}
+.stat-card::before{
+  content:'';position:absolute;top:0;right:0;
+  width:80px;height:80px;border-radius:50%;
+  opacity:0.07;transform:translate(30%,-30%);
+  background:var(--c);
+}
+.stat-card[data-c="lime"]{--c:var(--accent);}
+.stat-card[data-c="purple"]{--c:var(--accent2);}
+.stat-card[data-c="teal"]{--c:var(--accent4);}
+.stat-card[data-c="red"]{--c:var(--accent3);}
+
+.stat-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:16px;
+}
+.stat-dot{width:5px;height:5px;border-radius:50%;background:var(--c);}
+
+.stat-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1;letter-spacing:-1px;margin-bottom:8px;}
+.stat-card[data-c="lime"] .stat-num{color:var(--accent);}
+.stat-card[data-c="purple"] .stat-num{color:var(--accent2);}
+.stat-card[data-c="teal"] .stat-num{color:var(--accent4);}
+.stat-card[data-c="red"] .stat-num{color:var(--accent3);}
+
+.stat-sub{font-size:12px;color:var(--muted);}
+.stat-online{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.online-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.4);}50%{box-shadow:0 0 0 6px rgba(74,222,128,0);}}
+
+/* ═══════════ CARDS ═══════════ */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:24px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.card-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-0.2px;}
+.card-badge{
+  font-size:11px;font-weight:600;padding:5px 12px;border-radius:50px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);
+}
+
+/* ═══════════ TABLE ═══════════ */
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:14px 16px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:16px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.015);}
+
+.avatar{
+  width:32px;height:32px;border-radius:10px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+  background:var(--s2);border:1px solid var(--border);
+}
+.user-cell{display:flex;align-items:center;gap:12px;}
+.username{font-size:12px;color:var(--muted);}
+
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;}
+.b-ielts{background:rgba(123,108,255,0.12);color:#9b8fff;border:1px solid rgba(123,108,255,0.2);}
+.b-cefr{background:rgba(200,242,100,0.1);color:#b8d855;border:1px solid rgba(200,242,100,0.18);}
+.b-all{background:rgba(66,217,200,0.1);color:#42d9c8;border:1px solid rgba(66,217,200,0.18);}
+
+.level-pill{
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:500;
+  padding:3px 8px;border-radius:5px;background:var(--s2);border:1px solid var(--border);
+}
+.streak{display:flex;align-items:center;gap:5px;color:#fbbf24;font-size:13px;font-weight:600;}
+
+/* ═══════════ SEARCH ═══════════ */
+.search-wrap{position:relative;margin-bottom:20px;}
+.search-wrap::before{content:'🔍';position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:13px;}
+input[type="text"]{
+  width:100%;background:rgba(0,0,0,0.25);border:1px solid var(--border);
+  padding:12px 16px 12px 42px;border-radius:12px;color:var(--text);
+  font-family:inherit;font-size:14px;outline:none;transition:border-color 0.2s;
+}
+input[type="text"]:focus{border-color:rgba(200,242,100,0.3);}
+
+/* ═══════════ TOPICS ═══════════ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+select,textarea{
+  width:100%;background:rgba(0,0,0,0.25);border:1px solid var(--border);
+  padding:12px 16px;border-radius:12px;color:var(--text);
+  font-family:inherit;font-size:14px;outline:none;transition:border-color 0.2s;
+  appearance:none;
+}
+select:focus,textarea:focus{border-color:rgba(200,242,100,0.3);}
+textarea{resize:vertical;}
+
+.btn{
+  width:100%;padding:14px;border-radius:12px;border:none;
+  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;letter-spacing:0.3px;
+}
+.btn-primary{background:var(--accent);color:#06070d;}
+.btn-primary:hover{background:#d4f47a;transform:translateY(-1px);}
+.btn-danger{background:rgba(255,107,107,0.12);color:#ff6b6b;border:1px solid rgba(255,107,107,0.2);}
+.btn-danger:hover{background:rgba(255,107,107,0.2);}
+
+.topic-item{
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+  border-radius:12px;padding:14px;margin-bottom:10px;
+  transition:border-color 0.2s;
+}
+.topic-item:hover{border-color:var(--border2);}
+.topic-meta{display:flex;justify-content:space-between;margin-bottom:8px;}
+.topic-text{font-size:12px;color:var(--muted);line-height:1.5;}
+.topic-tag{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);}
+
+/* ═══════════ BROADCAST ═══════════ */
+.bc-wrap{max-width:680px;margin:0 auto;}
+.filter-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.chip-select{
+  background:var(--s2);border:1px solid var(--border);
+  padding:10px 16px;border-radius:10px;color:var(--text);
+  font-family:inherit;font-size:13px;outline:none;cursor:pointer;
+  min-width:180px;appearance:none;
+}
+.chip-select:focus{border-color:rgba(200,242,100,0.3);}
+.char-counter{font-size:11px;color:var(--muted);text-align:right;margin-top:6px;font-family:'DM Mono',monospace;}
+
+/* ═══════════ TAB PAGES ═══════════ */
+.tab-page{display:none;}
+.tab-page.active{display:block;animation:fadeUp 0.35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══════════ CHART ═══════════ */
+.chart-wrap{position:relative;}
+
+/* ═══════════ LOADER ═══════════ */
+#loader{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:10000;transition:opacity 0.4s;gap:20px;
+}
+.loader-logo{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent);}
+.loader-bar{width:180px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+.loader-fill{height:100%;background:var(--accent);animation:load 1.2s ease-in-out forwards;}
+@keyframes load{from{width:0;}to{width:100%;}}
+#loader.hidden{opacity:0;pointer-events:none;}
+
+/* ═══════════ SCROLLBAR ═══════════ */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:4px;}
+
+/* ═══════════ SECTION DIVIDER ═══════════ */
+.section-divider{height:1px;background:linear-gradient(to right,var(--border),transparent);margin:8px 0 24px;}
+</style>
 </head>
 <body>
-    <div id="loader"><div class="spinner"></div></div>
 
-    <aside class="sidebar">
-        <div class="logo">🗣 CEFRchi AI</div>
-        <nav>
-            <div class="nav-item active" onclick="switchTab('dashboard', this)"><i>📊</i> Dashboard</div>
-            <div class="nav-item" onclick="switchTab('users', this)"><i>👥</i> CRM Userlar</div>
-            <div class="nav-item" onclick="switchTab('topics', this)"><i>📚</i> Topiklar</div>
-            <div class="nav-item" onclick="switchTab('broadcast', this)"><i>📨</i> Broadcast</div>
-        </nav>
-        <a href="login.html" style="margin-top:auto; color:#f43f5e; text-decoration:none; padding:15px; text-align:center; font-weight:600">🔐 Logout</a>
-    </aside>
+<div id="loader">
+  <div class="loader-logo">CEFRchi AI</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
 
-    <main class="main">
-        <div class="header-top">
-            <h2 id="page-title">Dashboard</h2>
-            <div id="current-time" style="color:var(--text-muted); font-size:14px">Dushanba, 11 May</div>
+<aside class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-mark">C</div>
+    <div class="logo-text">CEFR<span>chi</span></div>
+  </div>
+
+  <div class="nav-label">Asosiy</div>
+  <div class="nav-item active" onclick="switchTab('dashboard',this)">
+    <div class="nav-dot"></div>
+    <span class="nav-icon">◈</span> Dashboard
+  </div>
+  <div class="nav-item" onclick="switchTab('users',this)">
+    <div class="nav-dot"></div>
+    <span class="nav-icon">◉</span> CRM Userlar
+  </div>
+
+  <div class="nav-label" style="margin-top:16px">Kontent</div>
+  <div class="nav-item" onclick="switchTab('topics',this)">
+    <div class="nav-dot"></div>
+    <span class="nav-icon">▣</span> Topiklar
+  </div>
+  <div class="nav-item" onclick="switchTab('broadcast',this)">
+    <div class="nav-dot"></div>
+    <span class="nav-icon">▷</span> Broadcast
+  </div>
+
+  <div class="sidebar-footer">
+    <a href="login.html">⎋ &nbsp;Logout</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="page-title">Dashboard</h1>
+      <p>CEFRchi AI Admin Paneli — v2.0</p>
+    </div>
+    <div class="time-chip" id="current-time">11 May 2026</div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <section id="tab-dashboard" class="tab-page active">
+    <div class="stats-row">
+      <div class="stat-card" data-c="lime">
+        <div class="stat-tag"><div class="stat-dot"></div> Foydalanuvchilar</div>
+        <div id="s-total-users" class="stat-num">—</div>
+        <div class="stat-sub">Jami ro'yxatdan o'tgan</div>
+      </div>
+      <div class="stat-card" data-c="purple">
+        <div class="stat-tag"><div class="stat-dot"></div> Testlar</div>
+        <div id="s-total-tests" class="stat-num">—</div>
+        <div class="stat-sub">Bajarilgan sessiyalar</div>
+      </div>
+      <div class="stat-card" data-c="teal">
+        <div class="stat-tag"><div class="stat-dot"></div> O'rtacha</div>
+        <div id="s-avg-band" class="stat-num">—</div>
+        <div class="stat-sub">Band / CEFR ball</div>
+      </div>
+      <div class="stat-card" data-c="red">
+        <div class="stat-tag"><div class="stat-dot"></div> Server</div>
+        <div class="stat-online">
+          <div class="online-dot"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#4ade80;">ONLINE</span>
         </div>
+        <div class="stat-sub" style="margin-top:10px">Hamma tizim ishlayapti</div>
+      </div>
+    </div>
 
-        <!-- DASHBOARD TAB -->
-        <section id="tab-dashboard" class="tab-page active">
-            <div class="stats-row">
-                <div class="stat-card"><div class="stat-label">Jami Userlar</div><div id="s-total-users" class="stat-value">0</div></div>
-                <div class="stat-card purple"><div class="stat-label">Testlar Soni</div><div id="s-total-tests" class="stat-value">0</div></div>
-                <div class="stat-card blue"><div class="stat-label">O'rtacha Band</div><div id="s-avg-band" class="stat-value">0.0</div></div>
-                <div class="stat-card"><div class="stat-label">Server Status</div><div class="stat-value" style="color:#10b981; font-size:18px">● Online</div></div>
-            </div>
-            <div class="card">
-                <h3>Faollik Grafigi</h3>
-                <canvas id="activityChart" height="100"></canvas>
-            </div>
-        </section>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Kunlik Faollik</div>
+        <div class="card-badge" id="chart-range">Oxirgi 7 kun</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="activityChart" height="90"></canvas>
+      </div>
+    </div>
+  </section>
 
-        <!-- USERS TAB -->
-        <section id="tab-users" class="tab-page">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h3>Foydalanuvchilar Monitoringi</h3>
-                    <input type="text" id="userSearch" class="search-bar" style="width:300px; margin-bottom:0" placeholder="Qidirish..." onkeyup="filterUsers()">
-                </div>
-                <table>
-                    <thead>
-                        <tr><th>Ism</th><th>Username</th><th>Exam</th><th>Level</th><th>Streak</th></tr>
-                    </thead>
-                    <tbody id="usersList"></tbody>
-                </table>
-            </div>
-        </section>
+  <!-- ══ USERS ══ -->
+  <section id="tab-users" class="tab-page">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Foydalanuvchilar</div>
+        <div class="card-badge" id="user-count-badge">— ta user</div>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="userSearch" placeholder="Ism yoki username bo'yicha qidirish..." onkeyup="filterUsers()">
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Foydalanuvchi</th>
+            <th>Username</th>
+            <th>Exam</th>
+            <th>Daraja</th>
+            <th>Streak</th>
+          </tr>
+        </thead>
+        <tbody id="usersList"></tbody>
+      </table>
+    </div>
+  </section>
 
-        <!-- TOPICS TAB -->
-        <section id="tab-topics" class="tab-page">
-            <div class="grid-2">
-                <div class="card">
-                    <h3>Yangi Topik Qo'shish</h3>
-                    <div class="form-group">
-                        <label>Topik Matni (Savollar/Cue Card)</label>
-                        <textarea id="t-text" rows="5" placeholder="Topikni kiriting..."></textarea>
-                    </div>
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>Imtihon Turi</label>
-                            <select id="t-exam"><option value="IELTS">IELTS</option><option value="CEFR">CEFR</option><option value="ALL">Ikkalasi ham</option></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Part</label>
-                            <select id="t-part"><option value="1">Part 1</option><option value="2">Part 2</option><option value="3">Part 3</option></select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Daraja (Level)</label>
-                        <select id="t-level"><option value="ALL">Barcha darajalar</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option></select>
-                    </div>
-                    <button class="btn-action" onclick="saveTopic()">➕ Topikni Saqlash</button>
-                </div>
-                <div class="card">
-                    <h3>Mavjud Topiklar</h3>
-                    <div id="topicsContainer" style="max-height:500px; overflow-y:auto"></div>
-                </div>
-            </div>
-        </section>
+  <!-- ══ TOPICS ══ -->
+  <section id="tab-topics" class="tab-page">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:20px;">Yangi Topik</div>
+        <div class="form-group">
+          <label>Topik Matni</label>
+          <textarea id="t-text" rows="6" placeholder="Savollar yoki cue card matni..."></textarea>
+        </div>
+        <div class="grid2" style="gap:12px;">
+          <div class="form-group">
+            <label>Imtihon</label>
+            <select id="t-exam">
+              <option value="IELTS">IELTS</option>
+              <option value="CEFR">CEFR</option>
+              <option value="ALL">Ikkalasi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Part</label>
+            <select id="t-part">
+              <option value="1">Part 1</option>
+              <option value="2">Part 2</option>
+              <option value="3">Part 3</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Daraja</label>
+          <select id="t-level">
+            <option value="ALL">Barcha</option>
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1">C1</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveTopic()">+ Saqlash</button>
+      </div>
 
-        <!-- BROADCAST TAB -->
-        <section id="tab-broadcast" class="tab-page">
-            <div class="card" style="max-width:800px; margin:0 auto">
-                <h3>Smart Broadcast (Xabar yuborish)</h3>
-                <p style="margin-bottom:20px; font-size:14px">Filtrlar orqali maqsadli xabar yuboring:</p>
-                
-                <div class="grid-2" style="margin-bottom:20px">
-                    <div class="form-group">
-                        <label>Kimlarga? (Exam)</label>
-                        <select id="b-exam"><option value="">Barchaga</option><option value="IELTS">Faqat IELTS</option><option value="CEFR">Faqat CEFR</option></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Qaysi darajaga?</label>
-                        <select id="b-level"><option value="">Barcha darajalarga</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option></select>
-                    </div>
-                </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Mavjud Topiklar</div>
+          <div class="card-badge" id="topics-count">0 ta</div>
+        </div>
+        <div id="topicsContainer" style="max-height:480px;overflow-y:auto;padding-right:4px;"></div>
+      </div>
+    </div>
+  </section>
 
-                <div class="form-group">
-                    <label>Xabar Matni (HTML qo'llab-quvvatlaydi)</label>
-                    <textarea id="b-text" rows="10" placeholder="<b>Salom!</b> Yangi topiklar qo'shildi..."></textarea>
-                </div>
-                <button class="btn-action" id="b-btn" onclick="sendBroadcast()">🚀 Xabarni Yuborish</button>
-            </div>
-        </section>
-    </main>
+  <!-- ══ BROADCAST ══ -->
+  <section id="tab-broadcast" class="tab-page">
+    <div class="bc-wrap">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:6px;">Broadcast Xabar</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">Filtrlar bo'yicha foydalanuvchilarga xabar yuborish</p>
+        <div class="section-divider"></div>
+        <div class="form-group">
+          <label>Kimlar?</label>
+          <div style="display:flex;gap:12px;">
+            <select class="chip-select" id="b-exam">
+              <option value="">Barcha exam</option>
+              <option value="IELTS">Faqat IELTS</option>
+              <option value="CEFR">Faqat CEFR</option>
+            </select>
+            <select class="chip-select" id="b-level">
+              <option value="">Barcha darajalar</option>
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="C1">C1</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Xabar (HTML qo'llanadi)</label>
+          <textarea id="b-text" rows="10" placeholder="<b>Salom!</b> Yangi topiklar qo'shildi..." oninput="updateChar()"></textarea>
+          <div class="char-counter"><span id="char-count">0</span> belgi</div>
+        </div>
+        <button class="btn btn-primary" id="b-btn" onclick="sendBroadcast()">▷ &nbsp;Xabarni Yuborish</button>
+      </div>
+    </div>
+  </section>
 
-    <script>
-        const API_BASE = 'https://web-production-69ee71.up.railway.app';
-        let usersData = [];
+</main>
 
-        async function apiRequest(path, options = {}) {
-            const res = await fetch(`${API_BASE}${path}`, { ...options, credentials: 'include' });
-            if (res.status === 401) { window.location.href = 'login.html'; return; }
-            return res.json();
+<script>
+const API_BASE='https://web-production-69ee71.up.railway.app';
+let usersData=[];
+
+async function apiRequest(path,options={}){
+  try{
+    const res=await fetch(`${API_BASE}${path}`,{...options,credentials:'include'});
+    if(res.status===401){window.location.href='login.html';return;}
+    return res.json();
+  }catch(e){return null;}
+}
+
+async function init(){
+  const stats=await apiRequest('/api/admin/stats');
+  if(!stats){
+    document.getElementById('s-total-users').innerText='N/A';
+    document.getElementById('s-total-tests').innerText='N/A';
+    document.getElementById('s-avg-band').innerText='N/A';
+    renderDemoChart();
+    document.getElementById('loader').classList.add('hidden');
+    return;
+  }
+  document.getElementById('s-total-users').innerText=stats.total_users.toLocaleString();
+  document.getElementById('s-total-tests').innerText=stats.total_tests.toLocaleString();
+  document.getElementById('s-avg-band').innerText=(stats.avg_band||0).toFixed(1);
+  usersData=stats.recent_users||[];
+  document.getElementById('user-count-badge').innerText=usersData.length+' ta user';
+  renderUsers(usersData);
+  renderChart(stats.daily_activity);
+  loadTopics();
+  document.getElementById('loader').classList.add('hidden');
+}
+
+function renderDemoChart(){
+  const demo=[12,18,14,22,30,25,35].map((d,i)=>({date:'May '+(5+i),count:d}));
+  renderChart(demo);
+  document.getElementById('loader').classList.add('hidden');
+}
+
+const COLORS=['#c8f264','#7b6cff','#42d9c8','#ff6b6b','#fbbf24','#f472b6','#60a5fa'];
+
+function renderUsers(users){
+  const colors=COLORS;
+  document.getElementById('usersList').innerHTML=users.map((u,i)=>`
+    <tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${colors[i%colors.length]}18;color:${colors[i%colors.length]};border-color:${colors[i%colors.length]}30;">
+            ${(u.full_name||'?')[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">${u.full_name||'Nomsiz'}</div>
+            <div class="username">@${u.username||'—'}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);">@${u.username||'—'}</span></td>
+      <td><span class="badge ${u.exam==='IELTS'?'b-ielts':u.exam==='CEFR'?'b-cefr':'b-all'}">${u.exam||'ALL'}</span></td>
+      <td><span class="level-pill">${u.level||'B1'}</span></td>
+      <td><div class="streak">🔥 ${u.streak||0}</div></td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers(){
+  const q=document.getElementById('userSearch').value.toLowerCase();
+  const f=usersData.filter(u=>u.full_name.toLowerCase().includes(q)||(u.username&&u.username.toLowerCase().includes(q)));
+  renderUsers(f);
+}
+
+async function loadTopics(){
+  const topics=await apiRequest('/api/admin/topics');
+  if(!topics)return;
+  document.getElementById('topics-count').innerText=topics.length+' ta';
+  document.getElementById('topicsContainer').innerHTML=topics.map(t=>`
+    <div class="topic-item">
+      <div class="topic-meta">
+        <span class="topic-tag">Part ${t.part} · ${t.exam}</span>
+        <span class="level-pill">${t.level}</span>
+      </div>
+      <div class="topic-text">${t.topic.substring(0,100)}${t.topic.length>100?'…':''}</div>
+    </div>
+  `).join('');
+}
+
+async function saveTopic(){
+  const text=document.getElementById('t-text').value.trim();
+  if(!text)return alert('Matnni kiriting');
+  await apiRequest('/api/admin/topics',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      topic:text,
+      exam:document.getElementById('t-exam').value,
+      part:document.getElementById('t-part').value,
+      level:document.getElementById('t-level').value
+    })
+  });
+  document.getElementById('t-text').value='';
+  loadTopics();
+}
+
+async function sendBroadcast(){
+  const text=document.getElementById('b-text').value.trim();
+  if(!text||!confirm("Filtrlangan userlarga xabar yuborilsinmi?"))return;
+  const btn=document.getElementById('b-btn');
+  btn.innerText='▷  Yuborilmoqda...';btn.disabled=true;
+  try{
+    const res=await apiRequest('/api/admin/broadcast',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text,filters:{exam:document.getElementById('b-exam').value,level:document.getElementById('b-level').value}})
+    });
+    if(res&&res.status==='ok'){alert(`✅ Yuborildi! ${res.count} ta user`);}
+    else{alert('❌ Xatolik: '+(res?.error||'Noma\'lum'));}
+  }catch(e){alert('❌ Server xatosi');}
+  finally{btn.innerText='▷  Xabarni Yuborish';btn.disabled=false;}
+}
+
+function switchTab(id,el){
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('page-title').innerText={
+    dashboard:'Dashboard',users:'CRM Userlar',topics:'Topiklar',broadcast:'Broadcast'
+  }[id]||id;
+}
+
+function updateChar(){
+  document.getElementById('char-count').innerText=document.getElementById('b-text').value.length;
+}
+
+function renderChart(daily){
+  const ctx=document.getElementById('activityChart').getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,0,300);
+  grad.addColorStop(0,'rgba(200,242,100,0.18)');
+  grad.addColorStop(1,'rgba(200,242,100,0)');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:daily.map(d=>d.date),
+      datasets:[{
+        label:'Sessiyalar',
+        data:daily.map(d=>d.count),
+        borderColor:'#c8f264',
+        borderWidth:2.5,
+        tension:0.45,
+        fill:true,
+        backgroundColor:grad,
+        pointBackgroundColor:'#c8f264',
+        pointBorderColor:'var(--bg)',
+        pointBorderWidth:2,
+        pointRadius:5,
+        pointHoverRadius:7,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#111425',
+          borderColor:'rgba(255,255,255,0.1)',
+          borderWidth:1,
+          titleColor:'#c8f264',
+          bodyColor:'#94a3b8',
+          padding:12,
+          cornerRadius:10,
         }
-
-        async function init() {
-            const stats = await apiRequest('/api/admin/stats');
-            if(!stats) return;
-
-            document.getElementById('s-total-users').innerText = stats.total_users;
-            document.getElementById('s-total-tests').innerText = stats.total_tests;
-            document.getElementById('s-avg-band').innerText = (stats.avg_band || 0).toFixed(1);
-            
-            usersData = stats.recent_users;
-            renderUsers(usersData);
-            renderChart(stats.daily_activity);
-            loadTopics();
-            
-            document.getElementById('loader').classList.add('hidden');
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          grid:{color:'rgba(255,255,255,0.04)',drawBorder:false},
+          ticks:{color:'#5a6180',font:{family:'DM Mono',size:11}}
+        },
+        x:{
+          grid:{display:false},
+          ticks:{color:'#5a6180',font:{family:'DM Mono',size:11}}
         }
+      }
+    }
+  });
+}
 
-        function renderUsers(users) {
-            document.getElementById('usersList').innerHTML = users.map(u => `
-                <tr>
-                    <td><div style="display:flex; align-items:center">
-                        <div style="width:32px; height:32px; background:var(--primary); border-radius:50%; margin-right:12px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800">${u.full_name[0]}</div>
-                        ${u.full_name}
-                    </div></td>
-                    <td style="color:var(--text-muted)">@${u.username || '-'}</td>
-                    <td><span class="badge ${u.exam=='IELTS'?'badge-ielts':'badge-cefr'}">${u.exam || 'ALL'}</span></td>
-                    <td><b>${u.level || 'B1'}</b></td>
-                    <td style="color:#fbbf24">🔥 ${u.streak || 0}</td>
-                </tr>
-            `).join('');
-        }
-
-        function filterUsers() {
-            const q = document.getElementById('userSearch').value.toLowerCase();
-            const filtered = usersData.filter(u => u.full_name.toLowerCase().includes(q) || (u.username && u.username.toLowerCase().includes(q)));
-            renderUsers(filtered);
-        }
-
-        async function loadTopics() {
-            const topics = await apiRequest('/api/admin/topics');
-            document.getElementById('topicsContainer').innerHTML = topics.map(t => `
-                <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border)">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px">
-                        <span style="font-size:10px; color:var(--primary); font-weight:800">PART ${t.part} | ${t.exam}</span>
-                        <span style="font-size:10px; color:var(--text-muted)">${t.level}</span>
-                    </div>
-                    <div style="font-size:13px">${t.topic.substring(0, 80)}...</div>
-                </div>
-            `).join('');
-        }
-
-        async function saveTopic() {
-            const text = document.getElementById('t-text').value;
-            if(!text) return alert("Matnni kiriting");
-            await apiRequest('/api/admin/topics', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({
-                    topic: text,
-                    exam: document.getElementById('t-exam').value,
-                    part: document.getElementById('t-part').value,
-                    level: document.getElementById('t-level').value
-                })
-            });
-            alert("✅ Topik saqlandi!"); loadTopics();
-        }
-
-        async function sendBroadcast() {
-            const text = document.getElementById('b-text').value;
-            if(!text || !confirm("Filtrlar bo'yicha barchaga xabar yuborilsinmi?")) return;
-            
-            const btn = document.getElementById('b-btn');
-            btn.innerText = "🚀 Yuborilmoqda..."; 
-            btn.disabled = true;
-
-            try {
-                const res = await apiRequest('/api/admin/broadcast', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({
-                        text: text,
-                        filters: {
-                            exam: document.getElementById('b-exam').value,
-                            level: document.getElementById('b-level').value
-                        }
-                    })
-                });
-                
-                if (res && res.status === "ok") {
-                    alert(`✅ Xabar yuborildi! Jami: ${res.count} user`);
-                } else {
-                    alert("❌ Xatolik yuz berdi: " + (res.error || "Noma'lum xato"));
-                }
-            } catch (err) {
-                console.error(err);
-                alert("❌ Serverga ulanishda xato!");
-            } finally {
-                btn.innerText = "🚀 Xabarni Yuborish"; 
-                btn.disabled = false;
-            }
-        }
-
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
-            el.classList.add('active');
-            document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
-        }
-
-        function renderChart(daily) {
-            new Chart(document.getElementById('activityChart'), {
-                type: 'line',
-                data: {
-                    labels: daily.map(d => d.date),
-                    datasets: [{
-                        label: 'Sessiyalar', data: daily.map(d => d.count),
-                        borderColor: '#6366f1', borderWidth: 3, tension: 0.4, fill: true,
-                        backgroundColor: (context) => {
-                            const ctx = context.chart.ctx;
-                            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
-                            gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
-                            return gradient;
-                        }
-                    }]
-                },
-                options: {
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        init();
-        document.getElementById('current-time').innerText = new Date().toLocaleDateString('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' });
-    </script>
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    init();
+    document.getElementById('current-time').innerText=new Date().toLocaleDateString('uz-UZ',{day:'numeric',month:'long',year:'numeric'});
+  },1000);
+});
+</script>
 </body>
 </html>
