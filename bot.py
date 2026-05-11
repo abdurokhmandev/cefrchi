@@ -3,8 +3,8 @@ import os
 import logging
 from aiogram import Bot, Dispatcher
 from config import BOT_TOKEN
-import db
-from middlewares import UserCheckMiddleware
+from utils.db import init as db_init
+from middlewares.middlewares import UserCheckMiddleware
 from handlers import start, menu, topics, speaking, history, admin
 from web_server import create_app
 from aiohttp import web
@@ -12,7 +12,7 @@ from aiohttp import web
 
 async def main():
     logging.basicConfig(level=logging.INFO)
-    db.init()
+    db_init()
     
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()

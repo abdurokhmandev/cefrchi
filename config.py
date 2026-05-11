@@ -16,7 +16,12 @@ else:
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://abdurokhman.uz/cefrchi.html")
 
 # Ma'lumotlar bazasi manzili (Railway Volume uchun)
-DB_PATH = os.getenv("DB_PATH", "bot.db")
+DB_PATH = os.getenv("DB_PATH", "data/bot.db")
+
+# Veb Admin login ma'lumotlari
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "cefr123")
+SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_32_chars_long!!") # 32 chars for Fernet
 
 
 

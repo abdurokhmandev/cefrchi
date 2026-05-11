@@ -5,8 +5,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from config import ADMIN_IDS
-import db
-import keyboards as kb
+from utils import db
+from keyboards import keyboards as kb
 
 router = Router()
 

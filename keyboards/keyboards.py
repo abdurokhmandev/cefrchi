@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup
-from i18n import t
+from utils.i18n import t
 
 def kb(*buttons, adjust=1):
     b = InlineKeyboardBuilder()

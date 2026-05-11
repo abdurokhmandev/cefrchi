@@ -2,10 +2,9 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-import ai
-import db
-import keyboards as kb
-from i18n import t
+from utils import ai, db
+from keyboards import keyboards as kb
+from utils.i18n import t
 import os
 import random
 import asyncio

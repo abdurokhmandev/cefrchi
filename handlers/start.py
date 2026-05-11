@@ -3,10 +3,9 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-import db
-import keyboards as kb
-from i18n import t
-import ai
+from utils import db, ai
+from keyboards import keyboards as kb
+from utils.i18n import t
 import os
 
 router = Router()

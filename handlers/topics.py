@@ -1,8 +1,8 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
-import db
+from utils import db
 import random
-import keyboards as kb
+from keyboards import keyboards as kb
 
 router = Router()
 

@@ -46,7 +46,7 @@ async def get_feedback(transcript: str, topic: str, lang: str, part: int = 1) ->
         elif part == 3:
             part_instruction += " This was an abstract discussion."
 
-        with open("speaking_prompt.txt", "r", encoding="utf-8") as f:
+        with open("data/speaking_prompt.txt", "r", encoding="utf-8") as f:
             system_prompt = f.read().replace("{LANG}", lang)
 
         full_prompt = f"{system_prompt}\n\nCONTEXT: {part_instruction}\nTOPIC: {topic}\nTRANSCRIPT: {transcript}"

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CEFRchi Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg: #0f172a;
+            --sidebar: #1e293b;
+            --card: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 50px;
+        }
+
+        .nav-menu { flex: 1; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+        .nav-link i { margin-right: 12px; font-size: 20px; }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #f43f5e;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+        }
+        .stat-label { font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
+        .stat-value { font-size: 28px; font-weight: 700; color: white; }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        /* CRM Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--text-muted); font-size: 13px; padding-bottom: 15px; }
+        td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
+        .user-name { font-weight: 600; }
+        .user-tag { font-size: 12px; color: var(--text-muted); }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        /* Inputs */
+        input, select, textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 12px; cursor: pointer; font-weight: 600;
+        }
+
+        #loader {
+            position: fixed; inset: 0; background: var(--bg);
+            display: flex; justify-content: center; align-items: center; z-index: 10000;
+        }
+
+        .hidden { display: none !important; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div id="loader"><div style="width:40px; height:40px; border:3px solid #334155; border-top-color:#6366f1; border-radius:50%; animation:spin 1s linear infinite;"></div></div>
+
+    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+    <div class="sidebar">
+        <div class="logo">CEFRchi Pro</div>
+        <div class="nav-menu">
+            <a href="#" class="nav-link active" onclick="showTab('dashboard', this)">Asosiy Panel</a>
+            <a href="#" class="nav-link" onclick="showTab('users', this)">Foydalanuvchilar (CRM)</a>
+            <a href="#" class="nav-link" onclick="showTab('topics', this)">Mavzular (Topics)</a>
+            <a href="#" class="nav-link" onclick="showTab('broadcast', this)">Xabar yuborish</a>
+        </div>
+        <a href="/logout" class="logout-btn">Chiqish</a>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2>Xush kelibsiz, Admin</h2>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card"><p class="stat-label">Jami Foydalanuvchilar</p><p id="s-users" class="stat-value">...</p></div>
+                <div class="stat-card"><p class="stat-label">Jami Sessiyalar</p><p id="s-tests" class="stat-value">...</p></div>
+                <div class="stat-card"><p class="stat-label">Avg. Band Score</p><p id="s-band" class="stat-value">...</p></div>
+                <div class="stat-card"><p class="stat-label">Server Status</p><p class="stat-value" style="color:#10b981">Online</p></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h3>Faollik Grafigi</h3></div>
+                <canvas id="activityChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Users CRM -->
+        <div id="tab-users" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Foydalanuvchilar Ro'yxati</h3>
+                    <input type="text" id="user-search" placeholder="Qidirish (ism, username)..." style="width:300px; margin-bottom:0;" oninput="filterUsers()">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Foydalanuvchi</th>
+                            <th>Level / Exam</th>
+                            <th>Ro'yxatdan o'tgan</th>
+                            <th>Streak</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Topics -->
+        <div id="tab-topics" class="tab-content">
+            <div class="content-grid">
+                <div class="card">
+                    <h3>Mavjud Mavzular</h3>
+                    <div id="topic-list" style="margin-top:20px"></div>
+                </div>
+                <div class="card">
+                    <h3>Yangi qo'shish</h3>
+                    <input type="text" id="topic-name" placeholder="Mavzu nomi (English)">
+                    <select id="topic-part">
+                        <option value="1">Part 1</option>
+                        <option value="2">Part 2</option>
+                        <option value="3">Part 3</option>
+                    </select>
+                    <button class="btn" style="width:100%" onclick="addTopic()">Qo'shish</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Broadcast -->
+        <div id="tab-broadcast" class="tab-content">
+            <div class="card" style="max-width: 600px;">
+                <h3>Barcha foydalanuvchilarga xabar</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">HTML formatini ishlatishingiz mumkin.</p>
+                <textarea id="msg-text" rows="10" placeholder="Xabar matnini yozing..."></textarea>
+                <button class="btn" style="width:100%" onclick="sendBroadcast()">Yuborish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allUsers = [];
+
+        async function init() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                if (res.status === 401) window.location.href = '/login';
+                const data = await res.json();
+
+                document.getElementById('s-users').innerText = data.total_users;
+                document.getElementById('s-tests').innerText = data.total_tests;
+                document.getElementById('s-band').innerText = (data.avg_band || 0).toFixed(1);
+
+                allUsers = data.recent_users;
+                renderUsers(allUsers);
+                renderChart(data.daily_activity);
+                fetchTopics();
+
+                document.getElementById('loader').classList.add('hidden');
+            } catch (e) { console.error(e); }
+        }
+
+        function renderUsers(users) {
+            const body = document.getElementById('user-table-body');
+            body.innerHTML = users.map(u => `
+                <tr>
+                    <td>
+                        <div class="user-name">${u.full_name}</div>
+                        <div class="user-tag">@${u.username || '—'}</div>
+                    </td>
+                    <td>
+                        <span class="badge">${u.level || 'B1'}</span>
+                        <span class="badge" style="background:rgba(168, 85, 247, 0.1); color:var(--secondary)">${u.exam || 'IELTS'}</span>
+                    </td>
+                    <td>${u.registered_at ? u.registered_at.split(' ')[0] : '—'}</td>
+                    <td>🔥 ${u.streak || 0}</td>
+                </tr>
+            `).join('');
+        }
+
+        function filterUsers() {
+            const q = document.getElementById('user-search').value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                u.full_name.toLowerCase().includes(q) || 
+                (u.username && u.username.toLowerCase().includes(q))
+            );
+            renderUsers(filtered);
+        }
+
+        function showTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active');
+            el.classList.add('active');
+        }
+
+        async function fetchTopics() {
+            const res = await fetch('/api/admin/topics');
+            const data = await res.json();
+            document.getElementById('topic-list').innerHTML = data.map(t => `
+                <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between;">
+                    <div><strong>${t.topic}</strong><br><small style="color:var(--text-muted)">Part ${t.part}</small></div>
+                </div>
+            `).join('');
+        }
+
+        async function addTopic() {
+            const topic = document.getElementById('topic-name').value;
+            const part = document.getElementById('topic-part').value;
+            if(!topic) return alert("Nomini kiriting");
+
+            const res = await fetch('/api/admin/topics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, part: parseInt(part) })
+            });
+            if(res.ok) {
+                alert("Topik qo'shildi");
+                document.getElementById('topic-name').value = "";
+                fetchTopics();
+            }
+        }
+
+        async function sendBroadcast() {
+            const text = document.getElementById('msg-text').value;
+            if(!text || !confirm("Barchaga yuborilsinmi?")) return;
+
+            const res = await fetch('/api/admin/broadcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            alert("Yuborildi! Jami: " + data.count);
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.date),
+                    datasets: [{
+                        label: 'Sessiyalar',
+                        data: data.map(d => d.count),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true, tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
