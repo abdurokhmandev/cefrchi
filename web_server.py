@@ -30,9 +30,14 @@ async def login_api(request):
     password = data.get('password')
     
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-        response = web.HTTPFound('/admin')
-        # Cookieni o'rnatamiz (juda sodda usul)
-        response.set_cookie('admin_token', 'authenticated_admin', max_age=86400) # 1 kun
+        response = web.json_response({"status": "ok"})
+        # Cookieni domenlararo ishlashi uchun sozlaymiz
+        response.set_cookie(
+            'admin_token', 'authenticated_admin', 
+            max_age=86400, 
+            samesite='None', 
+            secure=True
+        )
         return response
     
     return web.HTTPFound('/login?error=1')
