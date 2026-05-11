@@ -100,9 +100,10 @@ async def admin_page(request):
     return web.FileResponse('static/admin.html')
 
 def create_app():
-    # Fernet key generate (must be 32 url-safe base64-encoded bytes)
-    # We use our SECRET_KEY and pad/truncate it
-    key = base64.urlsafe_b64encode(SECRET_KEY.encode()[:32].ljust(32, b'-'))
+    # Fernet kalitini xavfsiz yaratish (32 baytli base64 formatda)
+    import hashlib
+    h = hashlib.sha256(SECRET_KEY.encode())
+    key = base64.urlsafe_b64encode(h.digest())
     
     app = web.Application(middlewares=[
         session_middleware(EncryptedCookieStorage(key)),
