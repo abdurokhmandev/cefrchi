@@ -31,7 +31,7 @@ async def show_settings(cb: CallbackQuery, user):
 @router.callback_query(F.data == "contact")
 async def show_contact(cb: CallbackQuery, user):
     lang = user['lang']
-    await cb.message.edit_text("📩 Savol va takliflar uchun: @cefrchi_support", reply_markup=kb.back_kb(lang))
+    await cb.message.edit_text("📩 Savol va takliflar uchun: @abdurokhmandev", reply_markup=kb.back_kb(lang))
 
 @router.callback_query(F.data == "set_level")
 async def set_level(cb: CallbackQuery):

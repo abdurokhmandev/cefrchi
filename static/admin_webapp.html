@@ -19,12 +19,7 @@
             --text-muted: #94a3b8;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -47,12 +42,9 @@
             background: linear-gradient(to right, #818cf8, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
         }
 
-        .container {
-            padding: 20px;
-        }
+        .container { padding: 20px; }
 
         .stats-grid {
             display: grid;
@@ -67,10 +59,7 @@
             padding: 20px;
             border-radius: 24px;
             border: 1px solid var(--border);
-            transition: 0.3s;
         }
-
-        .stat-card:active { transform: scale(0.95); }
 
         .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
         .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); }
@@ -81,50 +70,6 @@
             padding: 20px;
             border: 1px solid var(--border);
             margin-bottom: 25px;
-        }
-
-        .search-box {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px 45px 14px 20px;
-            color: var(--text);
-            font-family: inherit;
-        }
-
-        .user-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: slideUp 0.4s ease-out both;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-info h4 { font-size: 15px; margin-bottom: 4px; }
-        .user-info p { font-size: 12px; color: var(--text-muted); }
-
-        .user-badge {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
         }
 
         .nav-bar {
@@ -150,7 +95,6 @@
             text-decoration: none;
             color: var(--text-muted);
             font-size: 11px;
-            font-weight: 500;
             transition: 0.3s;
         }
 
@@ -173,44 +117,19 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        textarea {
-            width: 100%;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            color: var(--text);
-            font-family: inherit;
-            margin-bottom: 20px;
-            resize: none;
-        }
-
         .btn {
             background: linear-gradient(to right, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 20px;
-            width: 100%;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+            color: white; border: none; padding: 16px; border-radius: 20px;
+            width: 100%; font-weight: 700; cursor: pointer;
         }
 
         #loader {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
+            position: fixed; inset: 0; background: var(--bg);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border: 5px solid rgba(99, 102, 241, 0.1);
             border-top-color: var(--primary);
             border-radius: 50%;
@@ -218,16 +137,23 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .hidden { display: none; }
+        .hidden { display: none !important; }
+        
+        .user-card {
+            background: var(--card); border-radius: 20px; padding: 15px;
+            margin-bottom: 12px; border: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
     </style>
 </head>
 <body>
-    <div id="loader"><div class="spinner"></div></div>
+    <div id="loader">
+        <div class="spinner"></div>
+        <p id="l-status" style="margin-top:20px; color:var(--text-muted);">Yuklanmoqda...</p>
+    </div>
 
     <div class="header">
         <h1>CEFRchi Admin</h1>
-        <p style="font-size: 12px; color: var(--text-muted);">AI Speaking Assistant Control Panel</p>
     </div>
 
     <div class="container">
@@ -235,191 +161,107 @@
         <div id="tab-dashboard" class="tab-content active">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <p class="stat-label">Foydalanuvchilar</p>
-                    <p id="stat-users" class="stat-value">...</p>
+                    <p class="stat-label">A'zolar</p>
+                    <p id="s-users" class="stat-value">...</p>
                 </div>
                 <div class="stat-card">
                     <p class="stat-label">Sessiyalar</p>
-                    <p id="stat-tests" class="stat-value">...</p>
-                </div>
-                <div class="stat-card">
-                    <p class="stat-label">Avg. Band</p>
-                    <p id="stat-band" class="stat-value">...</p>
-                </div>
-                <div class="stat-card">
-                    <p class="stat-label">Active Users</p>
-                    <p class="stat-value" style="color: #10b981;">92%</p>
+                    <p id="s-tests" class="stat-value">...</p>
                 </div>
             </div>
-
             <div class="chart-box">
-                <h3 style="font-size: 16px; margin-bottom: 20px;">Haftalik Faollik</h3>
                 <canvas id="activityChart"></canvas>
             </div>
         </div>
 
         <!-- Users -->
         <div id="tab-users" class="tab-content">
-            <div class="search-box">
-                <input type="text" id="user-search" placeholder="Qidirish (ism yoki username)..." oninput="filterUsers()">
-            </div>
-            <div id="user-list">
-                <!-- Users inject -->
-            </div>
+            <div id="user-list"></div>
+        </div>
+
+        <!-- Topics -->
+        <div id="tab-topics" class="tab-content">
+            <div id="topic-list"></div>
         </div>
 
         <!-- Broadcast -->
         <div id="tab-broadcast" class="tab-content">
-            <h3 style="margin-bottom: 20px;">Xabar yuborish</h3>
-            <textarea id="msg-text" rows="8" placeholder="Xabar matnini kiriting... (HTML qo'llab-quvvatlanadi)"></textarea>
-            <button class="btn" onclick="sendBroadcast()">Hammaga yuborish</button>
-        </div>
-    </div>
-
-        <!-- Topics -->
-        <div id="tab-topics" class="tab-content">
-            <h3 style="margin-bottom: 20px;">Yangi Topik qo'shish</h3>
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Topik nomi (English)</label>
-                <input type="text" id="topic-name" placeholder="Masalan: Your favorite book">
-            </div>
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Qism (Part)</label>
-                <select id="topic-part" style="width: 100%; background: var(--card); color: white; padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
-                    <option value="1">Part 1</option>
-                    <option value="2">Part 2</option>
-                    <option value="3">Part 3</option>
-                </select>
-            </div>
-            <button class="btn" onclick="addTopic()" style="margin-bottom: 30px;">Qo'shish</button>
-
-            <h3 style="margin-bottom: 15px;">Mavjud Topiklar</h3>
-            <div id="topic-list">
-                <!-- Topics inject -->
-            </div>
+            <textarea id="msg-text" style="width:100%; height:150px; background:var(--card); color:white; border-radius:20px; padding:20px; border:1px solid var(--border); margin-bottom:20px;" placeholder="Xabar..."></textarea>
+            <button class="btn" onclick="sendBroadcast()">Yuborish</button>
         </div>
     </div>
 
     <nav class="nav-bar">
         <a href="javascript:void(0)" class="nav-item active" onclick="showTab('dashboard', this)">
-            <div class="nav-icon icon-home"></div>
-            <span>Asosiy</span>
+            <div class="nav-icon icon-home"></div><span>Asosiy</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" onclick="showTab('users', this)">
-            <div class="nav-icon icon-users"></div>
-            <span>A'zolar</span>
+            <div class="nav-icon icon-users"></div><span>A'zolar</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" onclick="showTab('topics', this)">
-            <div class="nav-icon icon-topics"></div>
-            <span>Topiklar</span>
+            <div class="nav-icon icon-topics"></div><span>Topiklar</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" onclick="showTab('broadcast', this)">
-            <div class="nav-icon icon-send"></div>
-            <span>Xabar</span>
+            <div class="nav-icon icon-send"></div><span>Xabar</span>
         </a>
     </nav>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.backgroundColor = "#0f172a";
-        tg.headerColor = "#0f172a";
-
-        // AGAR WEB APP VA BOT BOSHQARUV SERVERNIZ ALOHIDA BO'LSA, 
-        // BU YERGA BOT BACKEND URL MANZILINI YOZING (oxirida / bo'lmasin)
-        // Masalan: "https://sizning-botingiz.up.railway.app"
-        const API_BASE = "https://web-production-69ee71.up.railway.app"; 
-
-        let allUsers = [];
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if(tg) { tg.ready(); tg.expand(); }
 
         async function init() {
+            const status = document.getElementById('l-status');
             try {
-                const res = await fetch(`${API_BASE}/api/admin/stats`, {
+                if(!tg || !tg.initData) {
+                    throw new Error("Telegram orqali oching!");
+                }
+                
+                status.innerText = "Ma'lumotlar yuklanmoqda...";
+                const res = await fetch('/api/admin/stats', {
                     headers: { 'X-Telegram-Init-Data': tg.initData }
                 });
                 
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.error || "Ulanishda xatolik");
-                }
-
+                if(!res.ok) throw new Error("Serverda xatolik: " + res.status);
                 const data = await res.json();
-                
-                document.getElementById('stat-users').innerText = data.total_users;
-                document.getElementById('stat-tests').innerText = data.total_tests;
-                document.getElementById('stat-band').innerText = (data.avg_band || 0).toFixed(1);
 
-                allUsers = data.recent_users;
-                renderUsers(allUsers);
-                renderChart(data.daily_activity);
+                document.getElementById('s-users').innerText = data.total_users;
+                document.getElementById('s-tests').innerText = data.total_tests;
+                
+                if(data.recent_users) renderUsers(data.recent_users);
+                if(data.daily_activity) renderChart(data.daily_activity);
+
+                fetchTopics();
 
                 document.getElementById('loader').classList.add('hidden');
-            } catch (e) {
-                console.error(e);
-                document.getElementById('loader').innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Xatolik yuz berdi!</p>
-                        <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">${e.message}</p>
-                        <button class="btn" onclick="location.reload()">Qayta urinish</button>
-                        <p style="font-size:10px; color:var(--text-muted); margin-top:20px;">Eslatma: Panelni faqat Telegram orqali oching!</p>
-                    </div>
-                `;
+            } catch(e) {
+                document.getElementById('loader').innerHTML = `<div style="text-align:center; padding:20px; color:#f43f5e;"><h3>Xato!</h3><p>${e.message}</p></div>`;
             }
         }
 
         function renderUsers(users) {
-            const list = document.getElementById('user-list');
-            list.innerHTML = users.map(u => `
+            document.getElementById('user-list').innerHTML = users.map(u => `
                 <div class="user-card">
-                    <div class="user-info">
-                        <h4>${u.full_name}</h4>
-                        <p>@${u.username || '—'} | ${u.level || 'B1'}</p>
-                    </div>
-                    <div class="user-badge">${u.exam || 'CEFR'}</div>
+                    <div><h4>${u.full_name}</h4><p>@${u.username || '-'}</p></div>
                 </div>
             `).join('');
         }
 
-        function filterUsers() {
-            const q = document.getElementById('user-search').value.toLowerCase();
-            const filtered = allUsers.filter(u => 
-                u.full_name.toLowerCase().includes(q) || 
-                (u.username && u.username.toLowerCase().includes(q))
-            );
-            renderUsers(filtered);
+        async function fetchTopics() {
+            try {
+                const res = await fetch('/api/admin/topics', { headers: { 'X-Telegram-Init-Data': tg.initData } });
+                const topics = await res.json();
+                document.getElementById('topic-list').innerHTML = topics.map(t => `
+                    <div class="user-card"><div><h4>${t.topic}</h4><p>Part ${t.part}</p></div></div>
+                `).join('');
+            } catch(e) {}
         }
 
         function showTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(`tab-${id}`).classList.add('active');
+            document.getElementById('tab-'+id).classList.add('active');
             el.classList.add('active');
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-
-        async function sendBroadcast() {
-            const text = document.getElementById('msg-text').value;
-            if(!text) return tg.showAlert("Matn kiriting!");
-            
-            tg.showConfirm("Haqiqatan ham barcha foydalanuvchilarga xabar yubormoqchimisiz?", async (ok) => {
-                if(ok) {
-                    try {
-                        const res = await fetch(`${API_BASE}/api/admin/broadcast`, {
-                            method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'X-Telegram-Init-Data': tg.initData 
-                            },
-                            body: JSON.stringify({ text })
-                        });
-                        const data = await res.json();
-                        tg.showAlert(`Xabar yuborildi! Jami: ${data.count} kishi.`);
-                        document.getElementById('msg-text').value = "";
-                    } catch(e) {
-                        tg.showAlert("Xatolik!");
-                    }
-                }
-            });
         }
 
         function renderChart(data) {
@@ -431,68 +273,15 @@
                     datasets: [{
                         data: data.map(d => d.count),
                         borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
                         tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 0
+                        fill: false
                     }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
-                    }
-                }
+                options: { plugins: { legend: { display: false } } }
             });
         }
 
-        async function addTopic() {
-            const name = document.getElementById('topic-name').value;
-            const part = document.getElementById('topic-part').value;
-            if(!name) return tg.showAlert("Nomini kiriting!");
-
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/topics`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Telegram-Init-Data': tg.initData 
-                    },
-                    body: JSON.stringify({ topic: name, part: parseInt(part) })
-                });
-                if(res.ok) {
-                    tg.showAlert("Topik qo'shildi!");
-                    document.getElementById('topic-name').value = "";
-                    fetchTopics();
-                }
-            } catch(e) { tg.showAlert("Xatolik!"); }
-        }
-
-        async function fetchTopics() {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/topics`, {
-                    headers: { 'X-Telegram-Init-Data': tg.initData }
-                });
-                const data = await res.json();
-                const list = document.getElementById('topic-list');
-                list.innerHTML = data.map(t => `
-                    <div class="user-card">
-                        <div class="user-info">
-                            <h4>${t.topic}</h4>
-                            <p>Part ${t.part}</p>
-                        </div>
-                    </div>
-                `).join('');
-            } catch(e) {}
-        }
-
-        window.onload = () => {
-            init();
-            fetchTopics();
-        };
+        init();
     </script>
 </body>
 </html>
