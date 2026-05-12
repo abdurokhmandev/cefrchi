@@ -59,6 +59,16 @@ def init():
         date TEXT
     )""")
     
+    # Vocabularies jadvali
+    c.execute("""CREATE TABLE IF NOT EXISTS vocabularies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        topic TEXT,
+        content TEXT,
+        level TEXT,
+        exam TEXT,
+        created_at TEXT
+    )""")
+    
     conn.commit()
     conn.close()
 
@@ -205,7 +215,36 @@ def get_all_users():
     conn.row_factory = sqlite3.Row
     rows = conn.execute("SELECT * FROM users ORDER BY registered_at DESC").fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [dict(r) for r in rows]# Vocabulary operatsiyalari
+def add_vocab(topic, content, level, exam):
+    conn = sqlite3.connect(DB_PATH)
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute("INSERT INTO vocabularies (topic, content, level, exam, created_at) VALUES (?,?,?,?,?)",
+                 (topic, content, level, exam, date))
+    conn.commit()
+    conn.close()
 
+def get_all_vocab(exam=None, level=None):
+    conn = sqlite3.connect(DB_PATH)
+    query = "SELECT * FROM vocabularies"
+    params = []
+    if exam or level:
+        query += " WHERE 1=1"
+        if exam and exam != 'ALL':
+            query += " AND (exam=? OR exam='ALL')"
+            params.append(exam)
+        if level and level != 'ALL':
+            query += " AND (level=? OR level='ALL')"
+            params.append(level)
+    
+    query += " ORDER BY id DESC"
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return rows
 
+def delete_vocab(v_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("DELETE FROM vocabularies WHERE id=?", (v_id,))
+    conn.commit()
+    conn.close()
 

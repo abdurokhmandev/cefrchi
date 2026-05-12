@@ -147,7 +147,7 @@ async def topics_api(request):
         level = data.get('level', 'ALL')
         
         # 1. Bazaga saqlash
-        topic_id = db.add_topic(part, level, exam, topic_text, 0)
+        topic_id = db.add_topic(int(part), level, exam, topic_text, 0)
         
         # 2. Userlarga xabar yuborish
         users = db.get_all_users()
@@ -166,6 +166,31 @@ async def topics_api(request):
             except: pass
             
         return web.json_response({"status": "ok", "id": topic_id})
+
+async def vocab_api(request):
+    if request.method == "GET":
+        exam = request.query.get('exam')
+        level = request.query.get('level')
+        vocabs = db.get_all_vocab(exam, level)
+        return web.json_response([
+            {"id": v[0], "topic": v[1], "content": v[2], "level": v[3], "exam": v[4]} 
+            for v in vocabs
+        ])
+    elif request.method == "POST":
+        data = await request.json()
+        topic = data.get('topic')
+        content = data.get('content')
+        level = data.get('level', 'ALL')
+        exam = data.get('exam', 'ALL')
+        
+        db.add_vocab(topic, content, level, exam)
+        return web.json_response({"status": "ok"})
+    elif request.method == "DELETE":
+        v_id = request.query.get('id')
+        if v_id:
+            db.delete_vocab(int(v_id))
+            return web.json_response({"status": "ok"})
+        return web.json_response({"error": "Missing ID"}, status=400)
 
 async def admin_page(request):
     return web.FileResponse('static/admin.html')
@@ -190,6 +215,7 @@ def create_app():
     app.router.add_route('*', '/api/admin/stats', get_stats)
     app.router.add_route('*', '/api/admin/broadcast', broadcast)
     app.router.add_route('*', '/api/admin/topics', topics_api)
+    app.router.add_route('*', '/api/admin/vocab', vocab_api)
     app.router.add_get('/api/admin/user-photo/{tg_id}', get_user_photo)
     app.router.add_static('/static/', path='static', name='static')
     return app

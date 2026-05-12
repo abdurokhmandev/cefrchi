@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from config import BOT_TOKEN
 from utils.db import init as db_init
 from middlewares.middlewares import UserCheckMiddleware
-from handlers import start, menu, topics, speaking, history, admin
+from handlers import start, menu, topics, speaking, history, admin, vocab
 from web_server import create_app
 from aiohttp import web
 
@@ -27,6 +27,7 @@ async def main():
     dp.include_router(menu.router)
     dp.include_router(topics.router)
     dp.include_router(speaking.router)
+    dp.include_router(vocab.router)
     dp.include_router(history.router)
     
     # Web serverni sozlash

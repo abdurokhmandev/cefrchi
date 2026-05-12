@@ -252,12 +252,11 @@ textarea{resize:vertical;}
 #loader{
   position:fixed;inset:0;background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  z-index:10000;transition:opacity 0.4s;gap:18px;
+  z-index:10000;transition:opacity 0.5s ease;gap:18px;
 }
 .loader-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent);}
 .loader-bar{width:160px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
-.loader-fill{height:100%;background:var(--accent);animation:load 1.2s ease-in-out forwards;}
-@keyframes load{from{width:0;}to{width:100%;}}
+.loader-fill{height:100%;background:var(--accent);width:0;transition:width 1.2s ease-in-out;}
 #loader.hidden{opacity:0;pointer-events:none;}
 
 /* ═══════════ SCROLLBAR ═══════════ */
@@ -319,59 +318,54 @@ textarea{resize:vertical;}
 .action-btn.msg:hover{border-color:var(--accent2);color:var(--accent2);}
 
 .user-photo{width:32px;height:32px;border-radius:10px;object-fit:cover;border:1px solid var(--border);}
+.avatar-circle{
+  width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;border:1px solid rgba(255,255,255,0.1);
+}
+.modal-avatar-circle{
+  width:80px;height:80px;border-radius:24px;margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:800;border:2px solid var(--accent);
+  background:var(--s2);color:var(--accent);font-family:'Syne',sans-serif;
+}
+
+/* ═══════════ DEMO BANNER ═══════════ */
+.demo-banner{
+  background:rgba(200,242,100,0.06);border:1px solid rgba(200,242,100,0.15);
+  border-radius:12px;padding:10px 16px;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);
+}
+.demo-banner span{color:var(--accent);font-weight:700;}
 
 /* ═══════════ RESPONSIVE ═══════════ */
-
-/* Tablet: 768–1024px */
 @media(max-width:1024px){
   :root{--sidebar-w:220px;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
   .main{padding:28px 28px;}
 }
 
-/* Mobile: ≤768px */
 @media(max-width:768px){
   .hamburger{display:flex;}
-
-  .sidebar{
-    transform:translateX(-100%);
-    width:260px;
-  }
+  .sidebar{transform:translateX(-100%);width:260px;}
   .sidebar.open{transform:translateX(0);}
-
-  .main{
-    margin-left:0;
-    padding:20px 16px;
-    padding-top:70px; /* hamburger uchun joy */
-  }
-
+  .main{margin-left:0;padding:20px 16px;padding-top:70px;}
   .topbar{flex-direction:column;gap:10px;margin-bottom:24px;}
   .topbar-left h1{font-size:22px;}
   .time-chip{align-self:flex-start;}
-
   .stats-row{grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
   .stat-num{font-size:26px;}
   .stat-card{padding:16px;}
-
   .card{padding:16px;border-radius:14px;}
-
   .grid2{grid-template-columns:1fr;}
-
   .bc-wrap{max-width:100%;}
-
   .filter-row{flex-direction:column;}
-
-  /* Topics formini yig'ish */
-  #tab-topics .grid2{grid-template-columns:1fr;}
 }
 
-/* Kichik mobil: ≤480px */
 @media(max-width:480px){
   .stats-row{grid-template-columns:1fr 1fr;}
   .stat-num{font-size:22px;}
   .stat-tag{font-size:9px;}
   .stat-sub{font-size:11px;}
-
   th{font-size:9px;padding:10px 10px;}
   td{padding:12px 10px;font-size:12px;}
 }
@@ -381,13 +375,10 @@ textarea{resize:vertical;}
 
 <div id="loader">
   <div class="loader-logo">CEFRchi AI</div>
-  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
 </div>
 
-<!-- Hamburger -->
 <button class="hamburger" onclick="toggleSidebar()" id="hamburgerBtn">☰</button>
-
-<!-- Overlay -->
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
 <aside class="sidebar" id="sidebar">
@@ -407,14 +398,9 @@ textarea{resize:vertical;}
   </div>
 
   <div class="nav-label" style="margin-top:14px">Kontent</div>
-  <div class="nav-item" onclick="switchTab('topics',this)">
-    <div class="nav-dot"></div>
-    <span class="nav-icon">▣</span> Topiklar
-  </div>
-  <div class="nav-item" onclick="switchTab('broadcast',this)">
-    <div class="nav-dot"></div>
-    <span class="nav-icon">▷</span> Broadcast
-  </div>
+  <div class="nav-item" onclick="switchTab('topics', this)"><span>📚</span> Topiklar</div>
+  <div class="nav-item" onclick="switchTab('vocab', this)"><span>📖</span> Lug'atlar</div>
+  <div class="nav-item" onclick="switchTab('broadcast', this)"><span>📢</span> Broadcast</div>
 
   <div class="sidebar-footer">
     <a href="login.html">⎋ &nbsp;Logout</a>
@@ -427,11 +413,15 @@ textarea{resize:vertical;}
       <h1 id="page-title">Dashboard</h1>
       <p>CEFRchi AI Admin Paneli — v2.0</p>
     </div>
-    <div class="time-chip" id="current-time">11 May 2026</div>
+    <div class="time-chip" id="current-time">—</div>
   </div>
 
   <!-- ══ DASHBOARD ══ -->
   <section id="tab-dashboard" class="tab-page active">
+    <div id="demo-banner-dash" class="demo-banner" style="display:none;">
+      ⚠ <span>Demo rejim</span> — Backend ulanmagan. Demo ma'lumotlar ko'rsatilmoqda.
+    </div>
+
     <div class="stats-row">
       <div class="stat-card" data-c="lime">
         <div class="stat-tag"><div class="stat-dot"></div> Foydalanuvchilar</div>
@@ -546,6 +536,54 @@ textarea{resize:vertical;}
     </div>
   </section>
 
+  <!-- ══ VOCAB ══ -->
+  <section id="tab-vocab" class="tab-page">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:18px;">Yangi Lug'at</div>
+        <div class="form-group">
+          <label>Mavzu</label>
+          <input type="text" id="v-topic" placeholder="Masalan: Education, Technology...">
+        </div>
+        <div class="form-group">
+          <label>Lug'at va Ma'nolari (Markdown/HTML mumkin)</label>
+          <textarea id="v-content" rows="10" placeholder="So'z: Ma'nosi..."></textarea>
+        </div>
+        <div class="grid2" style="gap:12px;">
+          <div class="form-group">
+            <label>Imtihon</label>
+            <select id="v-exam">
+              <option value="IELTS">IELTS</option>
+              <option value="CEFR">CEFR</option>
+              <option value="ALL">Ikkalasi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Daraja</label>
+            <select id="v-level">
+              <option value="ALL">Barcha darajalar</option>
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="C1">C1</option>
+              <option value="C2">C2</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveVocab()">Lug'atni Saqlash</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Ro'yxat</div>
+          <div class="card-badge" id="vocab-count">0 ta</div>
+        </div>
+        <div id="vocabContainer" class="topics-list"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ══ BROADCAST ══ -->
   <section id="tab-broadcast" class="tab-page">
     <div class="bc-wrap">
@@ -595,13 +633,12 @@ textarea{resize:vertical;}
 
 </main>
 
+<!-- ══ USER MODAL ══ -->
 <div class="modal-overlay" id="userModal">
   <div class="modal">
     <div class="modal-close" onclick="closeModal()">×</div>
     <div class="modal-header">
-      <div class="modal-avatar" id="m-avatar">
-        <img src="" alt="" id="m-img" onerror="this.src='https://ui-avatars.com/api/?name=?&background=111425&color=5a6180'">
-      </div>
+      <div id="m-avatar-container"></div>
       <div class="modal-title" id="m-name">Foydalanuvchi</div>
       <div class="modal-subtitle" id="m-username">@username</div>
     </div>
@@ -628,122 +665,218 @@ textarea{resize:vertical;}
 </div>
 
 <script>
-const API_BASE=''; // Relative path is safer for various deployments
-let usersData=[];
-let selectedTarget=null;
+// ── CONFIG ──
+const API_BASE = (window.location.protocol === 'file:') 
+  ? 'https://web-production-69ee71.up.railway.app' 
+  : '';
+const API_TIMEOUT = 5000;
 
-// ── Sidebar toggle ──
-function toggleSidebar(){
+let usersData = [];
+let selectedTarget = null;
+let chartInstance = null;
+
+// ── LOADER ──
+function showLoader() {
+  const loader = document.getElementById('loader');
+  const fill = document.getElementById('loaderFill');
+  loader.classList.remove('hidden');
+  // Animatsiyani qayta ishga tushirish
+  fill.style.width = '0';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fill.style.width = '100%';
+    });
+  });
+}
+
+function hideLoader() {
+  const loader = document.getElementById('loader');
+  loader.classList.add('hidden');
+  // opacity 0 bo'lgandan keyin display none
+  setTimeout(() => {
+    loader.style.display = 'none';
+  }, 600);
+}
+
+// ── SIDEBAR ──
+function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('show');
 }
-function closeSidebar(){
+function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
 }
 
-// ── API ──
-async function apiRequest(path,options={}){
-  try{
-    const res=await fetch(`${API_BASE}${path}`,{...options,credentials:'include'});
-    if(res.status===401){window.location.href='login.html';return;}
+// ── API (timeout bilan) ──
+async function apiRequest(path, options = {}) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), API_TIMEOUT);
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      credentials: 'include',
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (res.status === 401) {
+      window.location.href = 'login.html';
+      return null;
+    }
     return res.json();
-  }catch(e){return null;}
-}
-
-async function init(){
-  const stats=await apiRequest('/api/admin/stats');
-  if(!stats){
-    document.getElementById('s-total-users').innerText='N/A';
-    document.getElementById('s-total-tests').innerText='N/A';
-    document.getElementById('s-avg-band').innerText='N/A';
-    renderDemoChart();
-    document.getElementById('loader').classList.add('hidden');
-    return;
+  } catch (e) {
+    return null;
   }
-  document.getElementById('s-total-users').innerText=stats.total_users.toLocaleString();
-  document.getElementById('s-total-tests').innerText=stats.total_tests.toLocaleString();
-  document.getElementById('s-avg-band').innerText=(stats.avg_band||0).toFixed(1);
-  usersData=stats.recent_users||[];
-  document.getElementById('user-count-badge').innerText=usersData.length+' ta user';
-  renderUsers(usersData);
-  renderChart(stats.daily_activity);
-  loadTopics();
-  document.getElementById('loader').classList.add('hidden');
 }
 
-function renderDemoChart(){
-  const demo=[12,18,14,22,30,25,35].map((d,i)=>({date:'May '+(5+i),count:d}));
-  renderChart(demo);
-  document.getElementById('loader').classList.add('hidden');
+// ── DEMO DATA ──
+const DEMO_DATA = {
+  total_users: 142,
+  total_tests: 1847,
+  avg_band: 6.2,
+  recent_users: [
+    { tg_id: 100001, full_name: 'Alisher Toshmatov', username: 'alisher_t', exam: 'IELTS', level: 'B2', streak: 12, age: 22, registered_at: '2026-04-10', source: 'Referral', interests: 'Travel, Technology' },
+    { tg_id: 100002, full_name: 'Malika Yusupova', username: 'malika_y', exam: 'CEFR', level: 'B1', streak: 7, age: 19, registered_at: '2026-04-15', source: "To'g'ridan-to'g'ri", interests: 'Business, Writing' },
+    { tg_id: 100003, full_name: 'Jasur Karimov', username: 'jasur_k', exam: 'IELTS', level: 'C1', streak: 34, age: 25, registered_at: '2026-03-28', source: 'Instagram', interests: 'Academic, Research' },
+    { tg_id: 100004, full_name: 'Nilufar Rahimova', username: '', exam: 'CEFR', level: 'A2', streak: 3, age: 17, registered_at: '2026-05-01', source: "To'g'ridan-to'g'ri", interests: 'School, Music' },
+    { tg_id: 100005, full_name: 'Bobur Mirzayev', username: 'bobur_m', exam: 'IELTS', level: 'B1', streak: 19, age: 21, registered_at: '2026-04-22', source: 'Telegram', interests: 'Engineering, Math' },
+  ],
+  daily_activity: [
+    { date: 'May 6', count: 28 },
+    { date: 'May 7', count: 41 },
+    { date: 'May 8', count: 35 },
+    { date: 'May 9', count: 52 },
+    { date: 'May 10', count: 67 },
+    { date: 'May 11', count: 48 },
+    { date: 'May 12', count: 73 },
+  ]
+};
+
+const DEMO_TOPICS = [
+  { topic: 'Describe a place you would like to visit in the future. You should say where it is, why you want to go there...', exam: 'IELTS', part: 2, level: 'B2' },
+  { topic: 'Do you prefer living in the city or the countryside? Why?', exam: 'CEFR', part: 1, level: 'B1' },
+  { topic: 'Some people think that technology has made our lives more complicated. Do you agree?', exam: 'ALL', part: 3, level: 'C1' },
+];
+
+// ── INIT ──
+async function init() {
+  // Avval API ga urinib ko'r
+  const stats = await apiRequest('/api/admin/stats');
+
+  if (!stats) {
+    // Demo rejim
+    const banner = document.getElementById('demo-banner-dash');
+    if(banner) banner.style.display = 'flex';
+    renderStats(DEMO_DATA);
+    renderUsers(DEMO_DATA.recent_users);
+    renderChart(DEMO_DATA.daily_activity);
+    renderDemoTopics();
+  } else {
+    const banner = document.getElementById('demo-banner-dash');
+    if(banner) banner.style.display = 'none';
+    renderStats(stats);
+    usersData = stats.recent_users || [];
+    renderUsers(usersData);
+    renderChart(stats.daily_activity);
+    loadTopics();
+    loadVocab();
+  }
 }
 
-const COLORS=['#c8f264','#7b6cff','#42d9c8','#ff6b6b','#fbbf24','#f472b6','#60a5fa'];
+function renderStats(data) {
+  if(document.getElementById('s-total-users')) document.getElementById('s-total-users').innerText = (data.total_users || 0).toLocaleString();
+  if(document.getElementById('s-total-tests')) document.getElementById('s-total-tests').innerText = (data.total_tests || 0).toLocaleString();
+  if(document.getElementById('s-avg-band')) document.getElementById('s-avg-band').innerText = (data.avg_band || 0).toFixed(1);
+  usersData = data.recent_users || [];
+  if(document.getElementById('user-count-badge')) document.getElementById('user-count-badge').innerText = usersData.length + ' ta user';
+}
 
-function renderUsers(users){
-  document.getElementById('usersList').innerHTML=users.map((u,i)=>`
+function renderDemoTopics() {
+  document.getElementById('topics-count').innerText = DEMO_TOPICS.length + ' ta';
+  document.getElementById('topicsContainer').innerHTML = DEMO_TOPICS.map(t => `
+    <div class="topic-item">
+      <div class="topic-meta">
+        <span class="topic-tag">Part ${t.part} · ${t.exam}</span>
+        <span class="level-pill">${t.level}</span>
+      </div>
+      <div class="topic-text">${t.topic.substring(0, 100)}${t.topic.length > 100 ? '…' : ''}</div>
+    </div>
+  `).join('');
+}
+
+// ── COLORS ──
+const COLORS = ['#c8f264', '#7b6cff', '#42d9c8', '#ff6b6b', '#fbbf24', '#f472b6', '#60a5fa'];
+
+// ── RENDER USERS ──
+function renderUsers(users) {
+  document.getElementById('usersList').innerHTML = users.map((u, i) => `
     <tr>
       <td>
         <div class="user-cell">
-          <img class="user-photo" src="/api/admin/user-photo/${u.tg_id}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.full_name||'?')}&background=${COLORS[i%COLORS.length].replace('#','')}&color=fff'">
+          <div class="avatar-circle" style="background:${COLORS[i % COLORS.length]}20; color:${COLORS[i % COLORS.length]}; border-color:${COLORS[i % COLORS.length]}40;">
+            ${(u.full_name || '?')[0].toUpperCase()}
+          </div>
           <div>
-            <div style="font-weight:600;font-size:13px;">${u.full_name||'Nomsiz'}</div>
-            <div class="username">@${u.username||'—'}</div>
+            <div style="font-weight:600;font-size:13px;">${u.full_name || 'Nomsiz'}</div>
+            <div class="username">@${u.username || '—'}</div>
           </div>
         </div>
       </td>
       <td>
         <div style="display:flex;gap:6px;align-items:center;">
-          <span class="badge ${u.exam==='IELTS'?'b-ielts':u.exam==='CEFR'?'b-cefr':'b-all'}">${u.exam||'ALL'}</span>
-          <span class="level-pill">${u.level||'B1'}</span>
+          <span class="badge ${u.exam === 'IELTS' ? 'b-ielts' : u.exam === 'CEFR' ? 'b-cefr' : 'b-all'}">${u.exam || 'ALL'}</span>
+          <span class="level-pill">${u.level || 'B1'}</span>
         </div>
       </td>
-      <td><div class="streak">🔥 ${u.streak||0}</div></td>
+      <td><div class="streak">🔥 ${u.streak || 0}</div></td>
       <td>
         <div style="display:flex;gap:8px;">
           <div class="action-btn" title="Batafsil" onclick="showUserDetails(${u.tg_id})">ℹ</div>
-          <div class="action-btn msg" title="Xabar yuborish" onclick="selectUserForBroadcast(${u.tg_id}, '${u.full_name.replace(/'/g, "\\'")}')">✉</div>
-          <a href="${u.username?'https://t.me/'+u.username:'tg://user?id='+u.tg_id}" target="_blank" class="action-btn" title="Telegramda ochish">↗</a>
+          <div class="action-btn msg" title="Xabar yuborish" onclick="selectUserForBroadcast(${u.tg_id}, '${(u.full_name || '').replace(/'/g, "\\'")}')">✉</div>
+          <a href="${u.username ? 'https://t.me/' + u.username : 'tg://user?id=' + u.tg_id}" target="_blank" class="action-btn" title="Telegramda ochish">↗</a>
         </div>
       </td>
     </tr>
   `).join('');
 }
 
-function showUserDetails(id){
+// ── USER MODAL ──
+function showUserDetails(id) {
   const u = usersData.find(user => user.tg_id == id);
-  if(!u) return;
-  
-  document.getElementById('m-img').src = `/api/admin/user-photo/${u.tg_id}`;
+  if (!u) return;
+
+  const initial = (u.full_name || '?')[0].toUpperCase();
+  document.getElementById('m-avatar-container').innerHTML = `<div class="modal-avatar-circle">${initial}</div>`;
   document.getElementById('m-name').innerText = u.full_name || 'Nomsiz';
-  document.getElementById('m-username').innerText = u.username ? '@'+u.username : 'Username yo\'q';
+  document.getElementById('m-username').innerText = u.username ? '@' + u.username : "Username yo'q";
   document.getElementById('m-id').innerText = u.tg_id;
   document.getElementById('m-exam').innerText = u.exam || 'IELTS';
   document.getElementById('m-level').innerText = u.level || 'B1';
-  document.getElementById('m-age').innerText = u.age || 'Noma\'lum';
-  document.getElementById('m-date').innerText = u.registered_at ? u.registered_at.split(' ')[0] : 'Noma\'lum';
-  document.getElementById('m-source').innerText = u.source || 'To\'g'ridan-to'g'ri';
-  document.getElementById('m-interests').innerText = u.interests || 'Ko\'rsatilmagan';
-  document.getElementById('m-link').href = u.username ? 'https://t.me/'+u.username : 'tg://user?id='+u.tg_id;
-  
+  document.getElementById('m-age').innerText = u.age || "Noma'lum";
+  document.getElementById('m-date').innerText = u.registered_at ? u.registered_at.split(' ')[0] : "Noma'lum";
+  document.getElementById('m-source').innerText = u.source || "To'g'ridan-to'g'ri";
+  document.getElementById('m-interests').innerText = u.interests || "Ko'rsatilmagan";
+  document.getElementById('m-link').href = u.username ? 'https://t.me/' + u.username : 'tg://user?id=' + u.tg_id;
+
   const modal = document.getElementById('userModal');
   modal.dataset.id = id;
-  modal.dataset.name = u.full_name;
+  modal.dataset.name = u.full_name || '';
   modal.classList.add('active');
 }
 
-function closeModal(){
+function closeModal() {
   document.getElementById('userModal').classList.remove('active');
 }
 
-function messageFromModal(){
+function messageFromModal() {
   const id = document.getElementById('userModal').dataset.id;
   const name = document.getElementById('userModal').dataset.name;
   closeModal();
   selectUserForBroadcast(id, name);
 }
 
-function selectUserForBroadcast(id, name){
+// ── BROADCAST TARGET ──
+function selectUserForBroadcast(id, name) {
   selectedTarget = id;
   document.getElementById('target-name').innerText = name;
   document.getElementById('target-indicator').classList.add('active');
@@ -752,157 +885,237 @@ function selectUserForBroadcast(id, name){
   switchTab('broadcast', document.querySelector('.nav-item[onclick*="broadcast"]'));
 }
 
-function clearTarget(){
+function clearTarget() {
   selectedTarget = null;
   document.getElementById('target-indicator').classList.remove('active');
   document.getElementById('broadcast-filters').style.opacity = '1';
   document.getElementById('broadcast-filters').style.pointerEvents = 'all';
 }
 
-function filterUsers(){
-  const q=document.getElementById('userSearch').value.toLowerCase();
-  const f=usersData.filter(u=>u.full_name.toLowerCase().includes(q)||(u.username&&u.username.toLowerCase().includes(q)));
+// ── FILTER USERS ──
+function filterUsers() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  const f = usersData.filter(u =>
+    (u.full_name || '').toLowerCase().includes(q) ||
+    (u.username && u.username.toLowerCase().includes(q))
+  );
   renderUsers(f);
 }
 
-async function loadTopics(){
-  const topics=await apiRequest('/api/admin/topics');
-  if(!topics)return;
-  document.getElementById('topics-count').innerText=topics.length+' ta';
-  document.getElementById('topicsContainer').innerHTML=topics.map(t=>`
+// ── TOPICS ──
+async function loadTopics() {
+  const topics = await apiRequest('/api/admin/topics');
+  if (!topics) { renderDemoTopics(); return; }
+  document.getElementById('topics-count').innerText = topics.length + ' ta';
+  document.getElementById('topicsContainer').innerHTML = topics.map(t => `
     <div class="topic-item">
       <div class="topic-meta">
         <span class="topic-tag">Part ${t.part} · ${t.exam}</span>
         <span class="level-pill">${t.level}</span>
       </div>
-      <div class="topic-text">${t.topic.substring(0,100)}${t.topic.length>100?'…':''}</div>
+      <div class="topic-text">${t.topic.substring(0, 100)}${t.topic.length > 100 ? '…' : ''}</div>
     </div>
   `).join('');
 }
 
-async function saveTopic(){
-  const text=document.getElementById('t-text').value.trim();
-  if(!text)return alert('Matnni kiriting');
-  await apiRequest('/api/admin/topics',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      topic:text,
-      exam:document.getElementById('t-exam').value,
-      part:document.getElementById('t-part').value,
-      level:document.getElementById('t-level').value
+async function saveTopic() {
+  const text = document.getElementById('t-text').value.trim();
+  if (!text) return alert('Matnni kiriting');
+  const res = await apiRequest('/api/admin/topics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic: text,
+      exam: document.getElementById('t-exam').value,
+      part: document.getElementById('t-part').value,
+      level: document.getElementById('t-level').value
     })
   });
-  document.getElementById('t-text').value='';
-  loadTopics();
+  if (res) {
+    document.getElementById('t-text').value = '';
+    loadTopics();
+  } else {
+    alert("Backend ulanmagan. Demo rejimda saqlash mumkin emas.");
+  }
 }
 
-async function sendBroadcast(){
-  const text=document.getElementById('b-text').value.trim();
-  if(!text) return alert('Xabar matnini kiriting');
-  
-  const targetText = selectedTarget ? "Tanlangan foydalanuvchiga" : "Filtrlangan barcha userlarga";
-  if(!confirm(targetText + " xabar yuborilsinmi?")) return;
+// ── BROADCAST ──
+async function sendBroadcast() {
+  const text = document.getElementById('b-text').value.trim();
+  if (!text) return alert('Xabar matnini kiriting');
 
-  const btn=document.getElementById('b-btn');
-  btn.innerText='▷  Yuborilmoqda...';btn.disabled=true;
-  try{
-    const res=await apiRequest('/api/admin/broadcast',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
+  const targetText = selectedTarget ? "Tanlangan foydalanuvchiga" : "Filtrlangan barcha userlarga";
+  if (!confirm(targetText + " xabar yuborilsinmi?")) return;
+
+  const btn = document.getElementById('b-btn');
+  btn.innerText = '▷  Yuborilmoqda...';
+  btn.disabled = true;
+
+  try {
+    const res = await apiRequest('/api/admin/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         text,
         target_user_id: selectedTarget,
-        filters:{
-          exam:document.getElementById('b-exam').value,
-          level:document.getElementById('b-level').value
+        filters: {
+          exam: document.getElementById('b-exam').value,
+          level: document.getElementById('b-level').value
         }
       })
     });
-    if(res&&res.status==='ok'){
+    if (res && res.status === 'ok') {
       alert(`✅ Yuborildi! ${res.count} ta user`);
-      if(selectedTarget) clearTarget();
+      if (selectedTarget) clearTarget();
+    } else {
+      alert('❌ Xatolik: ' + (res?.error || "Backend ulanmagan"));
     }
-    else{alert('❌ Xatolik: '+(res?.error||'Noma\'lum'));}
-  }catch(e){alert('❌ Server xatosi');}
-  finally{btn.innerText='▷  Xabarni Yuborish';btn.disabled=false;}
+  } catch (e) {
+    alert('❌ Server xatosi');
+  } finally {
+    btn.innerText = '▷  Xabarni Yuborish';
+    btn.disabled = false;
+  }
 }
 
-function switchTab(id,el){
-  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
+// ── SWITCH TAB ──
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
   el.classList.add('active');
-  document.getElementById('page-title').innerText={
-    dashboard:'Dashboard',users:'CRM Userlar',topics:'Topiklar',broadcast:'Broadcast'
-  }[id]||id;
-  // mobildan tab o'zgarganda sidebarni yopish
+  document.getElementById('page-title').innerText = {
+    dashboard: 'Dashboard', users: 'CRM Userlar', topics: 'Topiklar', vocab: 'Lug\'atlar', broadcast: 'Broadcast'
+  }[id] || id;
   closeSidebar();
 }
 
-function updateChar(){
-  document.getElementById('char-count').innerText=document.getElementById('b-text').value.length;
+// ── CHAR COUNTER ──
+function updateChar() {
+  document.getElementById('char-count').innerText = document.getElementById('b-text').value.length;
 }
 
-function renderChart(daily){
-  const ctx=document.getElementById('activityChart').getContext('2d');
-  const grad=ctx.createLinearGradient(0,0,0,300);
-  grad.addColorStop(0,'rgba(200,242,100,0.18)');
-  grad.addColorStop(1,'rgba(200,242,100,0)');
-  new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:daily.map(d=>d.date),
-      datasets:[{
-        label:'Sessiyalar',
-        data:daily.map(d=>d.count),
-        borderColor:'#c8f264',
-        borderWidth:2.5,
-        tension:0.45,
-        fill:true,
-        backgroundColor:grad,
-        pointBackgroundColor:'#c8f264',
-        pointBorderColor:'var(--bg)',
-        pointBorderWidth:2,
-        pointRadius:5,
-        pointHoverRadius:7,
+// ── CHART ──
+function renderChart(daily) {
+  if (chartInstance) { chartInstance.destroy(); }
+  const ctx = document.getElementById('activityChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 300);
+  grad.addColorStop(0, 'rgba(200,242,100,0.18)');
+  grad.addColorStop(1, 'rgba(200,242,100,0)');
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: daily.map(d => d.date),
+      datasets: [{
+        label: 'Sessiyalar',
+        data: daily.map(d => d.count),
+        borderColor: '#c8f264',
+        borderWidth: 2.5,
+        tension: 0.45,
+        fill: true,
+        backgroundColor: grad,
+        pointBackgroundColor: '#c8f264',
+        pointBorderColor: '#06070d',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
       }]
     },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#111425',
-          borderColor:'rgba(255,255,255,0.1)',
-          borderWidth:1,
-          titleColor:'#c8f264',
-          bodyColor:'#94a3b8',
-          padding:12,
-          cornerRadius:10,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#111425',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#c8f264',
+          bodyColor: '#94a3b8',
+          padding: 12,
+          cornerRadius: 10,
         }
       },
-      scales:{
-        y:{
-          beginAtZero:true,
-          grid:{color:'rgba(255,255,255,0.04)',drawBorder:false},
-          ticks:{color:'#5a6180',font:{family:'DM Mono',size:11}}
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: '#5a6180', font: { family: 'DM Mono', size: 11 } }
         },
-        x:{
-          grid:{display:false},
-          ticks:{color:'#5a6180',font:{family:'DM Mono',size:11}}
+        x: {
+          grid: { display: false },
+          ticks: { color: '#5a6180', font: { family: 'DM Mono', size: 11 } }
         }
       }
     }
   });
 }
 
-window.addEventListener('load',()=>{
-  setTimeout(()=>{
-    init();
-    document.getElementById('current-time').innerText=new Date().toLocaleDateString('uz-UZ',{day:'numeric',month:'long',year:'numeric'});
-  },1000);
+// ── BOOTSTRAP ──
+window.addEventListener('load', () => {
+  // Vaqtni ko'rsat
+  document.getElementById('current-time').innerText = new Date().toLocaleDateString('uz-UZ', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  // Loader animatsiyasini boshlash
+  showLoader();
+
+  // 1.2s kutib, keyin init qilish (loader fill animation tugaguncha)
+  setTimeout(() => {
+    init().finally(() => {
+      // Init tugasa (muvaffaqiyatli yoki xato), loaderni yashir
+      hideLoader();
+    });
+  }, 1200);
 });
+
+// ── VOCAB ──
+async function loadVocab() {
+  const vocabs = await apiRequest('/api/admin/vocab');
+  if (!vocabs) return;
+  const countBadge = document.getElementById('vocab-count');
+  const container = document.getElementById('vocabContainer');
+  if(countBadge) countBadge.innerText = vocabs.length + ' ta';
+  if(container) {
+    container.innerHTML = vocabs.map(v => `
+      <div class="topic-item">
+        <div class="topic-meta">
+          <span class="topic-tag">${v.exam} · ${v.level}</span>
+          <button onclick="deleteVocab(${v.id})" style="background:none;border:none;color:var(--accent3);cursor:pointer;">O'chirish</button>
+        </div>
+        <div style="font-weight:700;margin-bottom:4px;">${v.topic}</div>
+        <div class="topic-text">${v.content.substring(0, 100)}${v.content.length > 100 ? '…' : ''}</div>
+      </div>
+    `).join('');
+  }
+}
+
+async function saveVocab() {
+  const topic = document.getElementById('v-topic').value.trim();
+  const content = document.getElementById('v-content').value.trim();
+  if (!topic || !content) return alert('Mavzu va lug\'at matnini kiriting');
+  
+  const res = await apiRequest('/api/admin/vocab', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic, content,
+      exam: document.getElementById('v-exam').value,
+      level: document.getElementById('v-level').value
+    })
+  });
+  if (res) {
+    document.getElementById('v-topic').value = '';
+    document.getElementById('v-content').value = '';
+    loadVocab();
+  }
+}
+
+async function deleteVocab(id) {
+  if (!confirm("O'chirilsinmi?")) return;
+  const res = await apiRequest(`/api/admin/vocab?id=${id}`, { method: 'DELETE' });
+  if (res) loadVocab();
+}
 </script>
 </body>
 </html>

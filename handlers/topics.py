@@ -67,7 +67,7 @@ async def handle_topic_voice(message: Message, state: FSMContext, user):
     await state.clear()
 
 # Eski handlerlar (o'zgarishsiz qoladi yoki kerak bo'lsa yangilanadi)
-@router.callback_query(F.data == "topic")
+@router.callback_query(F.data == "topics")
 async def select_exam(cb: CallbackQuery, user):
     lang = user['lang']
     text = "🎯 Qaysi turdagi topik kerak?" if lang == 'uz' else "🎯 Which type of topic?"
