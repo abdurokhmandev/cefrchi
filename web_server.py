@@ -1,7 +1,8 @@
-from aiohttp import web
+from aiohttp import web, ClientSession
 from utils import db
 import json
 import os
+import asyncio
 from config import BOT_TOKEN, ADMIN_USERNAME, ADMIN_PASSWORD
 from aiogram import Bot
 
@@ -76,27 +77,58 @@ async def broadcast(request):
         data = await request.json()
         text = data.get('text')
         filters = data.get('filters', {})
+        target_user_id = data.get('target_user_id')
         
         if not text: return web.json_response({"error": "No text"}, status=400)
         
-        users = db.get_all_users()
         count = 0
-        import asyncio
-        for user in users:
-            # Filtrlar bo'yicha tekshirish
-            if filters.get('exam') and user['exam'] != filters['exam']: continue
-            if filters.get('level') and user['level'] != filters['level']: continue
-            
+        if target_user_id:
+            # Faqat bitta foydalanuvchiga yuborish
             try:
-                await bot.send_message(user['tg_id'], text, parse_mode="HTML")
-                count += 1
-                await asyncio.sleep(0.05) # Telegram spamdan himoya
+                await bot.send_message(target_user_id, text, parse_mode="HTML")
+                count = 1
             except Exception as e:
-                print(f"Xato (user {user['tg_id']}): {e}")
+                return web.json_response({"error": f"Xabar yuborishda xato: {e}"}, status=400)
+        else:
+            # Filtrlar bo'yicha barchaga yuborish
+            users = db.get_all_users()
+            for user in users:
+                if filters.get('exam') and user['exam'] != filters['exam']: continue
+                if filters.get('level') and user['level'] != filters['level']: continue
+                
+                try:
+                    await bot.send_message(user['tg_id'], text, parse_mode="HTML")
+                    count += 1
+                    await asyncio.sleep(0.05) # Telegram spamdan himoya
+                except Exception as e:
+                    print(f"Xato (user {user['tg_id']}): {e}")
         
         return web.json_response({"status": "ok", "count": count})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
+async def get_user_photo(request):
+    tg_id = request.match_info.get('tg_id')
+    if not tg_id: return web.Response(status=400)
+    
+    try:
+        photos = await bot.get_user_profile_photos(int(tg_id), limit=1)
+        if photos.total_count > 0:
+            file_id = photos.photos[0][0].file_id # Eng kichik o'lchamdagi rasm yetarli
+            file = await bot.get_file(file_id)
+            file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file.file_path}"
+            
+            async with ClientSession() as session:
+                async with session.get(file_url) as resp:
+                    if resp.status == 200:
+                        image_data = await resp.read()
+                        return web.Response(body=image_data, content_type='image/jpeg')
+        
+        # Rasm topilmasa yoki xato bo'lsa default rasm qaytarish yoki 404
+        return web.Response(status=404)
+    except Exception as e:
+        print(f"Photo error: {e}")
+        return web.Response(status=404)
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -158,6 +190,7 @@ def create_app():
     app.router.add_route('*', '/api/admin/stats', get_stats)
     app.router.add_route('*', '/api/admin/broadcast', broadcast)
     app.router.add_route('*', '/api/admin/topics', topics_api)
+    app.router.add_get('/api/admin/user-photo/{tg_id}', get_user_photo)
     app.router.add_static('/static/', path='static', name='static')
     return app
 
