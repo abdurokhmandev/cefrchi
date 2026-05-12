@@ -8,6 +8,9 @@ from aiogram import Bot
 
 bot = Bot(token=BOT_TOKEN)
 
+PREFIX = "/cefrchi-admin"
+LOGIN_PATH = "/cefrchi_login"
+
 # Sodda autentifikatsiya middleware
 @web.middleware
 async def auth_middleware(request, handler):
@@ -23,12 +26,12 @@ async def auth_middleware(request, handler):
         return response
 
     # Faqat API va Admin sahifalari uchun tekshiramiz
-    if request.path.startswith('/api/admin') or request.path == '/admin':
+    if request.path.startswith(PREFIX + '/api/admin') or request.path == PREFIX:
         token = request.cookies.get('admin_token')
         if token != "authenticated_admin":
-            if request.path.startswith('/api/'):
+            if request.path.startswith(PREFIX + '/api/'):
                 return web.json_response({"error": "Unauthorized"}, status=401)
-            return web.HTTPFound('/login')
+            return web.HTTPFound(LOGIN_PATH)
     
     return await handler(request)
 
@@ -51,10 +54,10 @@ async def login_api(request):
         )
         return response
     
-    return web.HTTPFound('/login?error=1')
+    return web.HTTPFound(f'{LOGIN_PATH}?error=1')
 
 async def logout(request):
-    response = web.HTTPFound('/login')
+    response = web.HTTPFound(LOGIN_PATH)
     response.del_cookie('admin_token')
     return response
 
@@ -201,23 +204,25 @@ def create_app():
     # CORS (Vercel uchun)
     async def on_prepare(request, response):
         origin = request.headers.get('Origin')
-        if origin: response.headers['Access-Control-Allow-Origin'] = origin
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        # Faqat o'zingizni domeningizni yoki barchasini (ishonchli bo'lsa) ruxsat berishingiz mumkin
+        if origin: 
+            response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Telegram-Init-Data'
         response.headers['Access-Control-Allow-Credentials'] = 'true'
     app.on_response_prepare.append(on_prepare)
 
-    app.router.add_get('/', lambda r: web.HTTPFound('/admin'))
-    app.router.add_get('/login', login_page)
-    app.router.add_post('/login', login_api)
-    app.router.add_get('/logout', logout)
-    app.router.add_get('/admin', admin_page)
-    app.router.add_route('*', '/api/admin/stats', get_stats)
-    app.router.add_route('*', '/api/admin/broadcast', broadcast)
-    app.router.add_route('*', '/api/admin/topics', topics_api)
-    app.router.add_route('*', '/api/admin/vocab', vocab_api)
-    app.router.add_get('/api/admin/user-photo/{tg_id}', get_user_photo)
-    app.router.add_static('/static/', path='static', name='static')
+    app.router.add_get('/', lambda r: web.HTTPFound(PREFIX))
+    app.router.add_get(LOGIN_PATH, login_page)
+    app.router.add_post(LOGIN_PATH, login_api)
+    app.router.add_get(PREFIX + '/logout', logout)
+    app.router.add_get(PREFIX, admin_page)
+    app.router.add_route('*', PREFIX + '/api/admin/stats', get_stats)
+    app.router.add_route('*', PREFIX + '/api/admin/broadcast', broadcast)
+    app.router.add_route('*', PREFIX + '/api/admin/topics', topics_api)
+    app.router.add_route('*', PREFIX + '/api/admin/vocab', vocab_api)
+    app.router.add_get(PREFIX + '/api/admin/user-photo/{tg_id}', get_user_photo)
+    app.router.add_static(PREFIX + '/static/', path='static', name='static')
     return app
 
 if __name__ == '__main__':

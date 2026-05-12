@@ -403,7 +403,7 @@ textarea{resize:vertical;}
   <div class="nav-item" onclick="switchTab('broadcast', this)"><span>📢</span> Broadcast</div>
 
   <div class="sidebar-footer">
-    <a href="login.html">⎋ &nbsp;Logout</a>
+    <a href="/cefrchi_login">⎋ &nbsp;Logout</a>
   </div>
 </aside>
 
@@ -667,8 +667,8 @@ textarea{resize:vertical;}
 <script>
 // ── CONFIG ──
 const API_BASE = (window.location.protocol === 'file:') 
-  ? 'https://web-production-69ee71.up.railway.app' 
-  : '';
+  ? 'https://web-production-69ee71.up.railway.app/cefrchi-admin' 
+  : '/cefrchi-admin';
 const API_TIMEOUT = 5000;
 
 let usersData = [];
@@ -760,26 +760,29 @@ const DEMO_TOPICS = [
 
 // ── INIT ──
 async function init() {
-  // Avval API ga urinib ko'r
-  const stats = await apiRequest('/api/admin/stats');
-
-  if (!stats) {
-    // Demo rejim
+  try {
+    const stats = await apiRequest('/api/admin/stats');
     const banner = document.getElementById('demo-banner-dash');
-    if(banner) banner.style.display = 'flex';
+
+    if (!stats) {
+      if(banner) banner.style.display = 'flex';
+      renderStats(DEMO_DATA);
+      renderUsers(DEMO_DATA.recent_users);
+      renderChart(DEMO_DATA.daily_activity);
+      renderDemoTopics();
+    } else {
+      if(banner) banner.style.display = 'none';
+      renderStats(stats);
+      renderUsers(stats.recent_users || []);
+      renderChart(stats.daily_activity);
+      loadTopics();
+    }
+    // Vocab alohida yuklanadi, xatosi boshqalarga xalaqit bermasligi uchun
+    loadVocab().catch(e => console.error("Vocab error:", e));
+  } catch (e) {
+    console.error("Init error:", e);
     renderStats(DEMO_DATA);
     renderUsers(DEMO_DATA.recent_users);
-    renderChart(DEMO_DATA.daily_activity);
-    renderDemoTopics();
-  } else {
-    const banner = document.getElementById('demo-banner-dash');
-    if(banner) banner.style.display = 'none';
-    renderStats(stats);
-    usersData = stats.recent_users || [];
-    renderUsers(usersData);
-    renderChart(stats.daily_activity);
-    loadTopics();
-    loadVocab();
   }
 }
 
@@ -809,7 +812,13 @@ const COLORS = ['#c8f264', '#7b6cff', '#42d9c8', '#ff6b6b', '#fbbf24', '#f472b6'
 
 // ── RENDER USERS ──
 function renderUsers(users) {
-  document.getElementById('usersList').innerHTML = users.map((u, i) => `
+  usersData = users;
+  const list = document.getElementById('usersList');
+  if (!users || users.length === 0) {
+    list.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">Foydalanuvchilar topilmadi</td></tr>';
+    return;
+  }
+  list.innerHTML = users.map((u, i) => `
     <tr>
       <td>
         <div class="user-cell">
