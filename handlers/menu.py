@@ -12,15 +12,7 @@ async def show_menu(cb: CallbackQuery, user):
     welcome = t('main_menu_msg', lang, name=user['full_name'])
     await cb.message.edit_text(welcome, reply_markup=kb.main_menu(lang))
 
-@router.callback_query(F.data == "topics")
-async def show_topics(cb: CallbackQuery, user):
-    lang = user['lang']
-    await cb.message.edit_text("📚 Topiclar bo'limi tez kunda ishga tushadi.", reply_markup=kb.back_kb(lang))
 
-@router.callback_query(F.data == "vocab")
-async def show_vocab(cb: CallbackQuery, user):
-    lang = user['lang']
-    await cb.message.edit_text("📖 Maxsus Vocabularylar bo'limi tez kunda ishga tushadi.", reply_markup=kb.back_kb(lang))
 
 @router.callback_query(F.data == "settings")
 async def show_settings(cb: CallbackQuery, user):
