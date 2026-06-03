@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEFRchi AI — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg:#06070d;
+  --s1:#0c0e18;
+  --s2:#111425;
+  --border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.12);
+  --text:#e8eaf0;
+  --muted:#5a6180;
+  --accent:#c8f264;
+  --accent2:#7b6cff;
+  --accent3:#ff6b6b;
+  --accent4:#42d9c8;
+  --sidebar-w:240px;
+}
+
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ═══════════ SIDEBAR ═══════════ */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--s1);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:28px 16px;
+  position:fixed;height:100vh;
+  z-index:200;
+  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.logo-wrap{display:flex;align-items:center;gap:10px;margin-bottom:40px;padding:0 8px;}
+.logo-mark{
+  width:34px;height:34px;background:var(--accent);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:#06070d;font-weight:800;flex-shrink:0;
+}
+.logo-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.3px;}
+.logo-text span{color:var(--accent);}
+
+.nav-label{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0 10px;margin-bottom:8px;margin-top:6px;}
+
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;color:var(--muted);
+  border-radius:10px;margin-bottom:3px;
+  cursor:pointer;font-weight:500;font-size:13.5px;
+  transition:all 0.2s;position:relative;
+  border:1px solid transparent;
+}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text);border-color:var(--border);}
+.nav-item.active{
+  background:rgba(200,242,100,0.07);
+  color:var(--accent);border-color:rgba(200,242,100,0.18);
+}
+.nav-item.active .nav-dot{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:transparent;transition:all 0.2s;flex-shrink:0;}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+
+.sidebar-footer{margin-top:auto;padding:14px;background:rgba(255,82,82,0.06);border:1px solid rgba(255,82,82,0.12);border-radius:12px;}
+.sidebar-footer a{color:#ff6b6b;text-decoration:none;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
+
+/* ═══════════ OVERLAY ═══════════ */
+.overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:150;
+  backdrop-filter:blur(2px);
+}
+.overlay.show{display:block;}
+
+/* ═══════════ HAMBURGER ═══════════ */
+.hamburger{
+  display:none;position:fixed;top:16px;left:16px;z-index:300;
+  width:40px;height:40px;border-radius:10px;
+  background:var(--s1);border:1px solid var(--border);
+  cursor:pointer;align-items:center;justify-content:center;
+  font-size:18px;color:var(--text);transition:all 0.2s;
+}
+.hamburger:hover{border-color:var(--border2);}
+
+/* ═══════════ MAIN ═══════════ */
+.main{
+  margin-left:var(--sidebar-w);
+  flex:1;
+  padding:36px 40px;
+  min-height:100vh;
+  transition:margin-left 0.3s;
+}
+
+.topbar{
+  display:flex;justify-content:space-between;
+  align-items:flex-start;margin-bottom:40px;
+  gap:16px;
+}
+.topbar-left h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;line-height:1.15;}
+.topbar-left p{color:var(--muted);font-size:13px;margin-top:5px;}
+.time-chip{
+  background:var(--s2);border:1px solid var(--border);
+  padding:7px 16px;border-radius:50px;font-size:12px;
+  color:var(--muted);font-family:'DM Mono',monospace;
+  white-space:nowrap;flex-shrink:0;
+}
+
+/* ═══════════ STATS ROW ═══════════ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
+
+.stat-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:16px;padding:20px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.3s,transform 0.2s;cursor:default;
+}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.stat-card::before{
+  content:'';position:absolute;top:0;right:0;
+  width:70px;height:70px;border-radius:50%;
+  opacity:0.07;transform:translate(30%,-30%);
+  background:var(--c);
+}
+.stat-card[data-c="lime"]{--c:var(--accent);}
+.stat-card[data-c="purple"]{--c:var(--accent2);}
+.stat-card[data-c="teal"]{--c:var(--accent4);}
+.stat-card[data-c="red"]{--c:var(--accent3);}
+
+.stat-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:14px;
+}
+.stat-dot{width:5px;height:5px;border-radius:50%;background:var(--c);}
+
+.stat-num{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;line-height:1;letter-spacing:-1px;margin-bottom:6px;}
+.stat-card[data-c="lime"] .stat-num{color:var(--accent);}
+.stat-card[data-c="purple"] .stat-num{color:var(--accent2);}
+.stat-card[data-c="teal"] .stat-num{color:var(--accent4);}
+.stat-card[data-c="red"] .stat-num{color:var(--accent3);}
+
+.stat-sub{font-size:12px;color:var(--muted);}
+.stat-online{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.online-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.4);}50%{box-shadow:0 0 0 6px rgba(74,222,128,0);}}
+
+/* ═══════════ CARDS ═══════════ */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;}
+.card-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;}
+.card-badge{
+  font-size:11px;font-weight:600;padding:4px 12px;border-radius:50px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);
+  white-space:nowrap;flex-shrink:0;
+}
+
+/* ═══════════ TABLE ═══════════ */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:480px;}
+th{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.015);}
+
+.avatar{
+  width:30px;height:30px;border-radius:9px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+  background:var(--s2);border:1px solid var(--border);
+}
+.user-cell{display:flex;align-items:center;gap:10px;}
+.username{font-size:11px;color:var(--muted);margin-top:1px;}
+
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;}
+.b-ielts{background:rgba(123,108,255,0.12);color:#9b8fff;border:1px solid rgba(123,108,255,0.2);}
+.b-cefr{background:rgba(200,242,100,0.1);color:#b8d855;border:1px solid rgba(200,242,100,0.18);}
+.b-all{background:rgba(66,217,200,0.1);color:#42d9c8;border:1px solid rgba(66,217,200,0.18);}
+
+.level-pill{
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:500;
+  padding:3px 8px;border-radius:5px;background:var(--s2);border:1px solid var(--border);
+}
+.streak{display:flex;align-items:center;gap:5px;color:#fbbf24;font-size:13px;font-weight:600;}
+
+/* ═══════════ SEARCH ═══════════ */
+.search-wrap{position:relative;margin-bottom:18px;}
+.search-wrap::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;}
+input[type="text"]{
+  width:100%;background:rgba(0,0,0,0.25);border:1px solid var(--border);
+  padding:11px 14px 11px 40px;border-radius:11px;color:var(--text);
+  font-family:inherit;font-size:14px;outline:none;transition:border-color 0.2s;
+}
+input[type="text"]:focus{border-color:rgba(200,242,100,0.3);}
+
+/* ═══════════ TOPICS ═══════════ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+select,textarea{
+  width:100%;background:rgba(0,0,0,0.25);border:1px solid var(--border);
+  padding:11px 14px;border-radius:11px;color:var(--text);
+  font-family:inherit;font-size:14px;outline:none;transition:border-color 0.2s;
+  appearance:none;
+}
+select:focus,textarea:focus{border-color:rgba(200,242,100,0.3);}
+textarea{resize:vertical;}
+
+.btn{
+  width:100%;padding:13px;border-radius:11px;border:none;
+  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;letter-spacing:0.3px;
+}
+.btn-primary{background:var(--accent);color:#06070d;}
+.btn-primary:hover{background:#d4f47a;transform:translateY(-1px);}
+.btn-danger{background:rgba(255,107,107,0.12);color:#ff6b6b;border:1px solid rgba(255,107,107,0.2);}
+
+.topic-item{
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+  border-radius:11px;padding:12px;margin-bottom:8px;
+  transition:border-color 0.2s;
+}
+.topic-item:hover{border-color:var(--border2);}
+.topic-meta{display:flex;justify-content:space-between;margin-bottom:6px;gap:8px;}
+.topic-text{font-size:12px;color:var(--muted);line-height:1.5;}
+.topic-tag{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);}
+
+/* ═══════════ BROADCAST ═══════════ */
+.bc-wrap{max-width:660px;margin:0 auto;}
+.chip-select{
+  flex:1;min-width:0;
+  background:var(--s2);border:1px solid var(--border);
+  padding:10px 14px;border-radius:10px;color:var(--text);
+  font-family:inherit;font-size:13px;outline:none;cursor:pointer;
+  appearance:none;
+}
+.chip-select:focus{border-color:rgba(200,242,100,0.3);}
+.char-counter{font-size:11px;color:var(--muted);text-align:right;margin-top:5px;font-family:'DM Mono',monospace;}
+
+/* ═══════════ TAB PAGES ═══════════ */
+.tab-page{display:none;}
+.tab-page.active{display:block;animation:fadeUp 0.3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══════════ CHART ═══════════ */
+.chart-wrap{position:relative;}
+
+/* ═══════════ LOADER ═══════════ */
+#loader{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:10000;transition:opacity 0.5s ease;gap:18px;
+}
+.loader-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent);}
+.loader-bar{width:160px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+.loader-fill{height:100%;background:var(--accent);width:0;transition:width 1.2s ease-in-out;}
+#loader.hidden{opacity:0;pointer-events:none;}
+
+/* ═══════════ SCROLLBAR ═══════════ */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:4px;}
+
+.section-divider{height:1px;background:linear-gradient(to right,var(--border),transparent);margin:6px 0 20px;}
+
+/* ═══════════ MODAL ═══════════ */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:2000;padding:20px;
+}
+.modal-overlay.active{display:flex;}
+.modal{
+  background:var(--s1);border:1px solid var(--border);border-radius:24px;
+  width:100%;max-width:500px;padding:32px;position:relative;animation:modalIn 0.3s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+.modal-close{
+  position:absolute;top:20px;right:20px;width:32px;height:32px;
+  border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.modal-header{text-align:center;margin-bottom:24px;}
+.modal-avatar{
+  width:80px;height:80px;border-radius:24px;margin:0 auto 16px;
+  border:2px solid var(--accent);padding:4px;background:var(--s2);
+}
+.modal-avatar img{width:100%;height:100%;border-radius:18px;object-fit:cover;}
+.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px;}
+.modal-subtitle{color:var(--muted);font-size:14px;}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;}
+.detail-item{background:rgba(255,255,255,0.02);padding:12px;border-radius:12px;border:1px solid var(--border);}
+.detail-label{font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;letter-spacing:1px;}
+.detail-val{font-size:13px;font-weight:600;}
+
+/* ═══════════ TARGET INDICATOR ═══════════ */
+.target-box{
+  background:rgba(200,242,100,0.1);border:1px solid rgba(200,242,100,0.2);
+  padding:12px 16px;border-radius:12px;margin-bottom:20px;
+  display:none;align-items:center;justify-content:space-between;
+}
+.target-box.active{display:flex;}
+.target-info{display:flex;align-items:center;gap:10px;}
+.target-name{font-weight:700;color:var(--accent);}
+.target-clear{cursor:pointer;color:var(--accent3);font-size:18px;}
+
+/* ═══════════ TABLE ACTIONS ═══════════ */
+.action-btn{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
+  background:rgba(255,255,255,0.03);color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.2s;
+}
+.action-btn:hover{border-color:var(--accent);color:var(--accent);}
+.action-btn.msg:hover{border-color:var(--accent2);color:var(--accent2);}
+
+.user-photo{width:32px;height:32px;border-radius:10px;object-fit:cover;border:1px solid var(--border);}
+.avatar-circle{
+  width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;border:1px solid rgba(255,255,255,0.1);
+}
+.modal-avatar-circle{
+  width:80px;height:80px;border-radius:24px;margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:800;border:2px solid var(--accent);
+  background:var(--s2);color:var(--accent);font-family:'Syne',sans-serif;
+}
+
+/* ═══════════ DEMO BANNER ═══════════ */
+.demo-banner{
+  background:rgba(200,242,100,0.06);border:1px solid rgba(200,242,100,0.15);
+  border-radius:12px;padding:10px 16px;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);
+}
+.demo-banner span{color:var(--accent);font-weight:700;}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media(max-width:1024px){
+  :root{--sidebar-w:220px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .main{padding:28px 28px;}
+}
+
+@media(max-width:768px){
+  .hamburger{display:flex;}
+  .sidebar{transform:translateX(-100%);width:260px;}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;padding:20px 16px;padding-top:70px;}
+  .topbar{flex-direction:column;gap:10px;margin-bottom:24px;}
+  .topbar-left h1{font-size:22px;}
+  .time-chip{align-self:flex-start;}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+  .stat-num{font-size:26px;}
+  .stat-card{padding:16px;}
+  .card{padding:16px;border-radius:14px;}
+  .grid2{grid-template-columns:1fr;}
+  .bc-wrap{max-width:100%;}
+  .filter-row{flex-direction:column;}
+}
+
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .stat-num{font-size:22px;}
+  .stat-tag{font-size:9px;}
+  .stat-sub{font-size:11px;}
+  th{font-size:9px;padding:10px 10px;}
+  td{padding:12px 10px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">CEFRchi AI</div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+</div>
+
+<button class="hamburger" onclick="toggleSidebar()" id="hamburgerBtn">☰</button>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-mark">C</div>
+    <div class="logo-text">CEFR<span>chi</span></div>
+  </div>
+
+  <div class="nav-label">Asosiy</div>
+  <div class="nav-item active" onclick="switchTab('dashboard',this)">
+    <div class="nav-dot"></div>
+    <span class="nav-icon">◈</span> Dashboard
+  </div>
+  <div class="nav-item" onclick="switchTab('users',this)">
+    <div class="nav-dot"></div>
+    <span class="nav-icon">◉</span> CRM Userlar
+  </div>
+
+  <div class="nav-label" style="margin-top:14px">Kontent</div>
+  <div class="nav-item" onclick="switchTab('topics', this)"><span>📚</span> Topiklar</div>
+  <div class="nav-item" onclick="switchTab('vocab', this)"><span>📖</span> Lug'atlar</div>
+  <div class="nav-item" onclick="switchTab('broadcast', this)"><span>📢</span> Broadcast</div>
+
+  <div class="sidebar-footer">
+    <a href="/cefrchi_login">⎋ &nbsp;Logout</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="page-title">Dashboard</h1>
+      <p>CEFRchi AI Admin Paneli — v2.0</p>
+    </div>
+    <div class="time-chip" id="current-time">—</div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <section id="tab-dashboard" class="tab-page active">
+    <div id="demo-banner-dash" class="demo-banner" style="display:none;">
+      ⚠ <span>Demo rejim</span> — Backend ulanmagan. Demo ma'lumotlar ko'rsatilmoqda.
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card" data-c="lime">
+        <div class="stat-tag"><div class="stat-dot"></div> Foydalanuvchilar</div>
+        <div id="s-total-users" class="stat-num">—</div>
+        <div class="stat-sub">Jami ro'yxatdan o'tgan</div>
+      </div>
+      <div class="stat-card" data-c="purple">
+        <div class="stat-tag"><div class="stat-dot"></div> Testlar</div>
+        <div id="s-total-tests" class="stat-num">—</div>
+        <div class="stat-sub">Bajarilgan sessiyalar</div>
+      </div>
+      <div class="stat-card" data-c="teal">
+        <div class="stat-tag"><div class="stat-dot"></div> O'rtacha</div>
+        <div id="s-avg-band" class="stat-num">—</div>
+        <div class="stat-sub">Band / CEFR ball</div>
+      </div>
+      <div class="stat-card" data-c="red">
+        <div class="stat-tag"><div class="stat-dot"></div> Server</div>
+        <div class="stat-online">
+          <div class="online-dot"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#4ade80;">ONLINE</span>
+        </div>
+        <div class="stat-sub" style="margin-top:10px">Hamma tizim ishlayapti</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Kunlik Faollik</div>
+        <div class="card-badge">Oxirgi 7 kun</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="activityChart" height="90"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ USERS ══ -->
+  <section id="tab-users" class="tab-page">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Foydalanuvchilar</div>
+        <div class="card-badge" id="user-count-badge">— ta user</div>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="userSearch" placeholder="Ism yoki username bo'yicha qidirish..." onkeyup="filterUsers()">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Foydalanuvchi</th>
+              <th>Ma'lumot</th>
+              <th>Streak</th>
+              <th>Amallar</th>
+            </tr>
+          </thead>
+          <tbody id="usersList"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ TOPICS ══ -->
+  <section id="tab-topics" class="tab-page">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:18px;">Yangi Topik</div>
+        <div class="form-group">
+          <label>Topik Matni</label>
+          <textarea id="t-text" rows="5" placeholder="Savollar yoki cue card matni..."></textarea>
+        </div>
+        <div class="grid2" style="gap:12px;">
+          <div class="form-group">
+            <label>Imtihon</label>
+            <select id="t-exam">
+              <option value="IELTS">IELTS</option>
+              <option value="CEFR">CEFR</option>
+              <option value="ALL">Ikkalasi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Part</label>
+            <select id="t-part">
+              <option value="1">Part 1</option>
+              <option value="2">Part 2</option>
+              <option value="3">Part 3</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Daraja</label>
+          <select id="t-level">
+            <option value="ALL">Barcha</option>
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1">C1</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveTopic()">+ Saqlash</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Mavjud Topiklar</div>
+          <div class="card-badge" id="topics-count">0 ta</div>
+        </div>
+        <div id="topicsContainer" style="max-height:460px;overflow-y:auto;padding-right:4px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ VOCAB ══ -->
+  <section id="tab-vocab" class="tab-page">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:18px;">Yangi Lug'at</div>
+        <div class="form-group">
+          <label>Mavzu</label>
+          <input type="text" id="v-topic" placeholder="Masalan: Education, Technology...">
+        </div>
+        <div class="form-group">
+          <label>Lug'at va Ma'nolari (Markdown/HTML mumkin)</label>
+          <textarea id="v-content" rows="10" placeholder="So'z: Ma'nosi..."></textarea>
+        </div>
+        <div class="grid2" style="gap:12px;">
+          <div class="form-group">
+            <label>Imtihon</label>
+            <select id="v-exam">
+              <option value="IELTS">IELTS</option>
+              <option value="CEFR">CEFR</option>
+              <option value="ALL">Ikkalasi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Daraja</label>
+            <select id="v-level">
+              <option value="ALL">Barcha darajalar</option>
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="C1">C1</option>
+              <option value="C2">C2</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveVocab()">Lug'atni Saqlash</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Ro'yxat</div>
+          <div class="card-badge" id="vocab-count">0 ta</div>
+        </div>
+        <div id="vocabContainer" class="topics-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ BROADCAST ══ -->
+  <section id="tab-broadcast" class="tab-page">
+    <div class="bc-wrap">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px;">Broadcast Xabar</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Foydalanuvchilarga xabar yuborish</p>
+        
+        <div id="target-indicator" class="target-box">
+          <div class="target-info">
+            <span style="font-size:16px;">👤</span>
+            <div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Yuborilmoqda:</div>
+              <div class="target-name" id="target-name">—</div>
+            </div>
+          </div>
+          <div class="target-clear" onclick="clearTarget()">×</div>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="form-group" id="broadcast-filters">
+          <label>Kimlar? (Filtrlar)</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;" class="filter-row">
+            <select class="chip-select" id="b-exam">
+              <option value="">Barcha exam</option>
+              <option value="IELTS">Faqat IELTS</option>
+              <option value="CEFR">Faqat CEFR</option>
+            </select>
+            <select class="chip-select" id="b-level">
+              <option value="">Barcha darajalar</option>
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="C1">C1</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Xabar (HTML qo'llanadi)</label>
+          <textarea id="b-text" rows="9" placeholder="<b>Salom!</b> Yangi topiklar qo'shildi..." oninput="updateChar()"></textarea>
+          <div class="char-counter"><span id="char-count">0</span> belgi</div>
+        </div>
+        <button class="btn btn-primary" id="b-btn" onclick="sendBroadcast()">▷ &nbsp;Xabarni Yuborish</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══ USER MODAL ══ -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal()">×</div>
+    <div class="modal-header">
+      <div id="m-avatar-container"></div>
+      <div class="modal-title" id="m-name">Foydalanuvchi</div>
+      <div class="modal-subtitle" id="m-username">@username</div>
+    </div>
+    
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">ID</div><div class="detail-val" id="m-id">—</div></div>
+      <div class="detail-item"><div class="detail-label">Imtihon</div><div class="detail-val" id="m-exam">—</div></div>
+      <div class="detail-item"><div class="detail-label">Daraja</div><div class="detail-val" id="m-level">—</div></div>
+      <div class="detail-item"><div class="detail-label">Yosh</div><div class="detail-val" id="m-age">—</div></div>
+      <div class="detail-item"><div class="detail-label">Ro'yxatdan o'tdi</div><div class="detail-val" id="m-date">—</div></div>
+      <div class="detail-item"><div class="detail-label">Manba</div><div class="detail-val" id="m-source">—</div></div>
+    </div>
+    
+    <div class="form-group" style="margin-top:20px;">
+      <label>Qiziqishlar</label>
+      <div class="detail-item" style="padding:14px;" id="m-interests">—</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px;">
+      <a id="m-link" href="#" target="_blank" class="btn" style="text-align:center;text-decoration:none;background:rgba(255,255,255,0.05);color:var(--text);border:1px solid var(--border);">Profilga o'tish</a>
+      <button class="btn btn-primary" onclick="messageFromModal()">Xabar yuborish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const API_BASE = (window.location.protocol === 'file:') 
+  ? 'https://web-production-69ee71.up.railway.app/cefrchi-admin' 
+  : '/cefrchi-admin';
+const API_TIMEOUT = 5000;
+
+let usersData = [];
+let selectedTarget = null;
+let chartInstance = null;
+
+// ── LOADER ──
+function showLoader() {
+  const loader = document.getElementById('loader');
+  const fill = document.getElementById('loaderFill');
+  loader.classList.remove('hidden');
+  // Animatsiyani qayta ishga tushirish
+  fill.style.width = '0';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fill.style.width = '100%';
+    });
+  });
+}
+
+function hideLoader() {
+  const loader = document.getElementById('loader');
+  loader.classList.add('hidden');
+  // opacity 0 bo'lgandan keyin display none
+  setTimeout(() => {
+    loader.style.display = 'none';
+  }, 600);
+}
+
+// ── SIDEBAR ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── API (timeout bilan) ──
+async function apiRequest(path, options = {}) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), API_TIMEOUT);
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      credentials: 'include',
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (res.status === 401) {
+      window.location.href = 'login.html';
+      return null;
+    }
+    return res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+// ── DEMO DATA ──
+const DEMO_DATA = {
+  total_users: 142,
+  total_tests: 1847,
+  avg_band: 6.2,
+  recent_users: [
+    { tg_id: 100001, full_name: 'Alisher Toshmatov', username: 'alisher_t', exam: 'IELTS', level: 'B2', streak: 12, age: 22, registered_at: '2026-04-10', source: 'Referral', interests: 'Travel, Technology' },
+    { tg_id: 100002, full_name: 'Malika Yusupova', username: 'malika_y', exam: 'CEFR', level: 'B1', streak: 7, age: 19, registered_at: '2026-04-15', source: "To'g'ridan-to'g'ri", interests: 'Business, Writing' },
+    { tg_id: 100003, full_name: 'Jasur Karimov', username: 'jasur_k', exam: 'IELTS', level: 'C1', streak: 34, age: 25, registered_at: '2026-03-28', source: 'Instagram', interests: 'Academic, Research' },
+    { tg_id: 100004, full_name: 'Nilufar Rahimova', username: '', exam: 'CEFR', level: 'A2', streak: 3, age: 17, registered_at: '2026-05-01', source: "To'g'ridan-to'g'ri", interests: 'School, Music' },
+    { tg_id: 100005, full_name: 'Bobur Mirzayev', username: 'bobur_m', exam: 'IELTS', level: 'B1', streak: 19, age: 21, registered_at: '2026-04-22', source: 'Telegram', interests: 'Engineering, Math' },
+  ],
+  daily_activity: [
+    { date: 'May 6', count: 28 },
+    { date: 'May 7', count: 41 },
+    { date: 'May 8', count: 35 },
+    { date: 'May 9', count: 52 },
+    { date: 'May 10', count: 67 },
+    { date: 'May 11', count: 48 },
+    { date: 'May 12', count: 73 },
+  ]
+};
+
+const DEMO_TOPICS = [
+  { topic: 'Describe a place you would like to visit in the future. You should say where it is, why you want to go there...', exam: 'IELTS', part: 2, level: 'B2' },
+  { topic: 'Do you prefer living in the city or the countryside? Why?', exam: 'CEFR', part: 1, level: 'B1' },
+  { topic: 'Some people think that technology has made our lives more complicated. Do you agree?', exam: 'ALL', part: 3, level: 'C1' },
+];
+
+// ── INIT ──
+async function init() {
+  try {
+    const stats = await apiRequest('/api/admin/stats');
+    const banner = document.getElementById('demo-banner-dash');
+
+    if (!stats) {
+      if(banner) banner.style.display = 'flex';
+      renderStats(DEMO_DATA);
+      renderUsers(DEMO_DATA.recent_users);
+      renderChart(DEMO_DATA.daily_activity);
+      renderDemoTopics();
+    } else {
+      if(banner) banner.style.display = 'none';
+      renderStats(stats);
+      renderUsers(stats.recent_users || []);
+      renderChart(stats.daily_activity);
+      loadTopics();
+    }
+    // Vocab alohida yuklanadi, xatosi boshqalarga xalaqit bermasligi uchun
+    loadVocab().catch(e => console.error("Vocab error:", e));
+  } catch (e) {
+    console.error("Init error:", e);
+    renderStats(DEMO_DATA);
+    renderUsers(DEMO_DATA.recent_users);
+  }
+}
+
+function renderStats(data) {
+  if(document.getElementById('s-total-users')) document.getElementById('s-total-users').innerText = (data.total_users || 0).toLocaleString();
+  if(document.getElementById('s-total-tests')) document.getElementById('s-total-tests').innerText = (data.total_tests || 0).toLocaleString();
+  if(document.getElementById('s-avg-band')) document.getElementById('s-avg-band').innerText = (data.avg_band || 0).toFixed(1);
+  usersData = data.recent_users || [];
+  if(document.getElementById('user-count-badge')) document.getElementById('user-count-badge').innerText = usersData.length + ' ta user';
+}
+
+function renderDemoTopics() {
+  document.getElementById('topics-count').innerText = DEMO_TOPICS.length + ' ta';
+  document.getElementById('topicsContainer').innerHTML = DEMO_TOPICS.map(t => `
+    <div class="topic-item">
+      <div class="topic-meta">
+        <span class="topic-tag">Part ${t.part} · ${t.exam}</span>
+        <span class="level-pill">${t.level}</span>
+      </div>
+      <div class="topic-text">${t.topic.substring(0, 100)}${t.topic.length > 100 ? '…' : ''}</div>
+    </div>
+  `).join('');
+}
+
+// ── COLORS ──
+const COLORS = ['#c8f264', '#7b6cff', '#42d9c8', '#ff6b6b', '#fbbf24', '#f472b6', '#60a5fa'];
+
+// ── RENDER USERS ──
+function renderUsers(users) {
+  usersData = users;
+  const list = document.getElementById('usersList');
+  if (!users || users.length === 0) {
+    list.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">Foydalanuvchilar topilmadi</td></tr>';
+    return;
+  }
+  list.innerHTML = users.map((u, i) => `
+    <tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar-circle" style="background:${COLORS[i % COLORS.length]}20; color:${COLORS[i % COLORS.length]}; border-color:${COLORS[i % COLORS.length]}40;">
+            ${(u.full_name || '?')[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:13px;">${u.full_name || 'Nomsiz'}</div>
+            <div class="username">@${u.username || '—'}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="badge ${u.exam === 'IELTS' ? 'b-ielts' : u.exam === 'CEFR' ? 'b-cefr' : 'b-all'}">${u.exam || 'ALL'}</span>
+          <span class="level-pill">${u.level || 'B1'}</span>
+        </div>
+      </td>
+      <td><div class="streak">🔥 ${u.streak || 0}</div></td>
+      <td>
+        <div style="display:flex;gap:8px;">
+          <div class="action-btn" title="Batafsil" onclick="showUserDetails(${u.tg_id})">ℹ</div>
+          <div class="action-btn msg" title="Xabar yuborish" onclick="selectUserForBroadcast(${u.tg_id}, '${(u.full_name || '').replace(/'/g, "\\'")}')">✉</div>
+          <a href="${u.username ? 'https://t.me/' + u.username : 'tg://user?id=' + u.tg_id}" target="_blank" class="action-btn" title="Telegramda ochish">↗</a>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── USER MODAL ──
+function showUserDetails(id) {
+  const u = usersData.find(user => user.tg_id == id);
+  if (!u) return;
+
+  const initial = (u.full_name || '?')[0].toUpperCase();
+  document.getElementById('m-avatar-container').innerHTML = `<div class="modal-avatar-circle">${initial}</div>`;
+  document.getElementById('m-name').innerText = u.full_name || 'Nomsiz';
+  document.getElementById('m-username').innerText = u.username ? '@' + u.username : "Username yo'q";
+  document.getElementById('m-id').innerText = u.tg_id;
+  document.getElementById('m-exam').innerText = u.exam || 'IELTS';
+  document.getElementById('m-level').innerText = u.level || 'B1';
+  document.getElementById('m-age').innerText = u.age || "Noma'lum";
+  document.getElementById('m-date').innerText = u.registered_at ? u.registered_at.split(' ')[0] : "Noma'lum";
+  document.getElementById('m-source').innerText = u.source || "To'g'ridan-to'g'ri";
+  document.getElementById('m-interests').innerText = u.interests || "Ko'rsatilmagan";
+  document.getElementById('m-link').href = u.username ? 'https://t.me/' + u.username : 'tg://user?id=' + u.tg_id;
+
+  const modal = document.getElementById('userModal');
+  modal.dataset.id = id;
+  modal.dataset.name = u.full_name || '';
+  modal.classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('userModal').classList.remove('active');
+}
+
+function messageFromModal() {
+  const id = document.getElementById('userModal').dataset.id;
+  const name = document.getElementById('userModal').dataset.name;
+  closeModal();
+  selectUserForBroadcast(id, name);
+}
+
+// ── BROADCAST TARGET ──
+function selectUserForBroadcast(id, name) {
+  selectedTarget = id;
+  document.getElementById('target-name').innerText = name;
+  document.getElementById('target-indicator').classList.add('active');
+  document.getElementById('broadcast-filters').style.opacity = '0.4';
+  document.getElementById('broadcast-filters').style.pointerEvents = 'none';
+  switchTab('broadcast', document.querySelector('.nav-item[onclick*="broadcast"]'));
+}
+
+function clearTarget() {
+  selectedTarget = null;
+  document.getElementById('target-indicator').classList.remove('active');
+  document.getElementById('broadcast-filters').style.opacity = '1';
+  document.getElementById('broadcast-filters').style.pointerEvents = 'all';
+}
+
+// ── FILTER USERS ──
+function filterUsers() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  const f = usersData.filter(u =>
+    (u.full_name || '').toLowerCase().includes(q) ||
+    (u.username && u.username.toLowerCase().includes(q))
+  );
+  renderUsers(f);
+}
+
+// ── TOPICS ──
+async function loadTopics() {
+  const topics = await apiRequest('/api/admin/topics');
+  if (!topics) { renderDemoTopics(); return; }
+  document.getElementById('topics-count').innerText = topics.length + ' ta';
+  document.getElementById('topicsContainer').innerHTML = topics.map(t => `
+    <div class="topic-item">
+      <div class="topic-meta">
+        <span class="topic-tag">Part ${t.part} · ${t.exam}</span>
+        <span class="level-pill">${t.level}</span>
+      </div>
+      <div class="topic-text">${t.topic.substring(0, 100)}${t.topic.length > 100 ? '…' : ''}</div>
+    </div>
+  `).join('');
+}
+
+async function saveTopic() {
+  const text = document.getElementById('t-text').value.trim();
+  if (!text) return alert('Matnni kiriting');
+  const res = await apiRequest('/api/admin/topics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic: text,
+      exam: document.getElementById('t-exam').value,
+      part: document.getElementById('t-part').value,
+      level: document.getElementById('t-level').value
+    })
+  });
+  if (res) {
+    document.getElementById('t-text').value = '';
+    loadTopics();
+  } else {
+    alert("Backend ulanmagan. Demo rejimda saqlash mumkin emas.");
+  }
+}
+
+// ── BROADCAST ──
+async function sendBroadcast() {
+  const text = document.getElementById('b-text').value.trim();
+  if (!text) return alert('Xabar matnini kiriting');
+
+  const targetText = selectedTarget ? "Tanlangan foydalanuvchiga" : "Filtrlangan barcha userlarga";
+  if (!confirm(targetText + " xabar yuborilsinmi?")) return;
+
+  const btn = document.getElementById('b-btn');
+  btn.innerText = '▷  Yuborilmoqda...';
+  btn.disabled = true;
+
+  try {
+    const res = await apiRequest('/api/admin/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        target_user_id: selectedTarget,
+        filters: {
+          exam: document.getElementById('b-exam').value,
+          level: document.getElementById('b-level').value
+        }
+      })
+    });
+    if (res && res.status === 'ok') {
+      alert(`✅ Yuborildi! ${res.count} ta user`);
+      if (selectedTarget) clearTarget();
+    } else {
+      alert('❌ Xatolik: ' + (res?.error || "Backend ulanmagan"));
+    }
+  } catch (e) {
+    alert('❌ Server xatosi');
+  } finally {
+    btn.innerText = '▷  Xabarni Yuborish';
+    btn.disabled = false;
+  }
+}
+
+// ── SWITCH TAB ──
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('page-title').innerText = {
+    dashboard: 'Dashboard', users: 'CRM Userlar', topics: 'Topiklar', vocab: 'Lug\'atlar', broadcast: 'Broadcast'
+  }[id] || id;
+  closeSidebar();
+}
+
+// ── CHAR COUNTER ──
+function updateChar() {
+  document.getElementById('char-count').innerText = document.getElementById('b-text').value.length;
+}
+
+// ── CHART ──
+function renderChart(daily) {
+  if (chartInstance) { chartInstance.destroy(); }
+  const ctx = document.getElementById('activityChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 300);
+  grad.addColorStop(0, 'rgba(200,242,100,0.18)');
+  grad.addColorStop(1, 'rgba(200,242,100,0)');
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: daily.map(d => d.date),
+      datasets: [{
+        label: 'Sessiyalar',
+        data: daily.map(d => d.count),
+        borderColor: '#c8f264',
+        borderWidth: 2.5,
+        tension: 0.45,
+        fill: true,
+        backgroundColor: grad,
+        pointBackgroundColor: '#c8f264',
+        pointBorderColor: '#06070d',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#111425',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#c8f264',
+          bodyColor: '#94a3b8',
+          padding: 12,
+          cornerRadius: 10,
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: '#5a6180', font: { family: 'DM Mono', size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: '#5a6180', font: { family: 'DM Mono', size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+// ── BOOTSTRAP ──
+window.addEventListener('load', () => {
+  // Vaqtni ko'rsat
+  document.getElementById('current-time').innerText = new Date().toLocaleDateString('uz-UZ', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  // Loader animatsiyasini boshlash
+  showLoader();
+
+  // 1.2s kutib, keyin init qilish (loader fill animation tugaguncha)
+  setTimeout(() => {
+    init().finally(() => {
+      // Init tugasa (muvaffaqiyatli yoki xato), loaderni yashir
+      hideLoader();
+    });
+  }, 1200);
+});
+
+// ── VOCAB ──
+async function loadVocab() {
+  const vocabs = await apiRequest('/api/admin/vocab');
+  if (!vocabs) return;
+  const countBadge = document.getElementById('vocab-count');
+  const container = document.getElementById('vocabContainer');
+  if(countBadge) countBadge.innerText = vocabs.length + ' ta';
+  if(container) {
+    container.innerHTML = vocabs.map(v => `
+      <div class="topic-item">
+        <div class="topic-meta">
+          <span class="topic-tag">${v.exam} · ${v.level}</span>
+          <button onclick="deleteVocab(${v.id})" style="background:none;border:none;color:var(--accent3);cursor:pointer;">O'chirish</button>
+        </div>
+        <div style="font-weight:700;margin-bottom:4px;">${v.topic}</div>
+        <div class="topic-text">${v.content.substring(0, 100)}${v.content.length > 100 ? '…' : ''}</div>
+      </div>
+    `).join('');
+  }
+}
+
+async function saveVocab() {
+  const topic = document.getElementById('v-topic').value.trim();
+  const content = document.getElementById('v-content').value.trim();
+  if (!topic || !content) return alert('Mavzu va lug\'at matnini kiriting');
+  
+  const res = await apiRequest('/api/admin/vocab', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic, content,
+      exam: document.getElementById('v-exam').value,
+      level: document.getElementById('v-level').value
+    })
+  });
+  if (res) {
+    document.getElementById('v-topic').value = '';
+    document.getElementById('v-content').value = '';
+    loadVocab();
+  }
+}
+
+async function deleteVocab(id) {
+  if (!confirm("O'chirilsinmi?")) return;
+  const res = await apiRequest(`/api/admin/vocab?id=${id}`, { method: 'DELETE' });
+  if (res) loadVocab();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+[
+    {
+        "part": 1,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Where is your hometown? What do you like about it? Is it a good place for young people?",
+        "category": "Hometown"
+    },
+    {
+        "part": 1,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Do you often feel bored? When would you feel bored? What do you do when you feel bored?",
+        "category": "Feelings"
+    },
+    {
+        "part": 1,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "When did you start using social media? Do you think you spend too much time on it? What do people often do on social media?",
+        "category": "Social Media"
+    },
+    {
+        "part": 1,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Do you work or study? What sports do you like? Where did you grow up?",
+        "category": "General"
+    },
+    {
+        "part": 2,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Describe a time when you received money as a gift.\n• When did it happen?\n• Who gave you the money?\n• Why did they give it to you?\n• How did you use the money?",
+        "category": "Gift"
+    },
+    {
+        "part": 2,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Describe a meal you had with your friends.\n• When and where did you have the meal?\n• Who were you with?\n• What food did you eat?",
+        "category": "Food"
+    },
+    {
+        "part": 2,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Describe a person who has influenced you greatly.\n• Who they are\n• How you know them\n• What they did\n• Why their influence matters",
+        "category": "People"
+    },
+    {
+        "part": 3,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "What kind of occasions require people to send money as gifts? Why do people rarely use cash now? Is it good and necessary to teach children to save money?",
+        "category": "Money"
+    },
+    {
+        "part": 3,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Why is food important in bringing people together? How have eating habits changed in your country?",
+        "category": "Food"
+    },
+    {
+        "part": 3,
+        "level": "ALL",
+        "exam": "IELTS",
+        "topic": "Does social media have a positive or negative effect on society? How has technology changed the way people communicate?",
+        "category": "Technology"
+    },
+    {
+        "part": 1,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "Please tell me about your best friend. Tell me about your country. What do you like to do in your free time?",
+        "category": "Personal"
+    },
+    {
+        "part": 1,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "What are some advantages of walking over driving? Why do some people prefer having a car of their own?",
+        "category": "Transport"
+    },
+    {
+        "part": 1,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "How do you usually spend your weekends? Do you prefer spending time indoors or outdoors? Why?",
+        "category": "Lifestyle"
+    },
+    {
+        "part": 2,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "Tell me about a critical decision you have made.\n• What was the decision?\n• How has this decision influenced you and your life?\n• What factors have the highest impact on the decisions people make?",
+        "category": "Decisions"
+    },
+    {
+        "part": 2,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "Describe a successful small business you know.\n• What the business is\n• How you know about it\n• What kind of people are their customers\n• Why you think it is successful",
+        "category": "Business"
+    },
+    {
+        "part": 3,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "Citizens should be allowed to carry personal guns.\n(Think of For and Against arguments)\nProvide a balanced opinion on this topic.",
+        "category": "Society"
+    },
+    {
+        "part": 3,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "Parents should control how much time their children spend on the internet.\n(Think of For and Against arguments)\nProvide a balanced opinion on this topic.",
+        "category": "Technology"
+    },
+    {
+        "part": 3,
+        "level": "ALL",
+        "exam": "CEFR",
+        "topic": "Should environmental education be compulsory in schools?\nProvide arguments for both sides and give your conclusion.",
+        "category": "Education"
+    }
+]

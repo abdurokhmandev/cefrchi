@@ -1,0 +1,250 @@
+import sqlite3
+from datetime import datetime
+from config import DB_PATH
+
+def init():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # Users jadvali yangilandi
+    c.execute("""CREATE TABLE IF NOT EXISTS users (
+        tg_id INTEGER PRIMARY KEY,
+        username TEXT,
+        full_name TEXT,
+        lang TEXT DEFAULT 'uz',
+        age INTEGER,
+        interests TEXT,
+        level TEXT DEFAULT 'B1',
+        exam TEXT DEFAULT 'IELTS',
+        source TEXT,
+        registered_at TEXT,
+        is_blocked INTEGER DEFAULT 0,
+        streak INTEGER DEFAULT 0,
+        last_activity TEXT
+    )""")
+    
+    # Sessions jadvali - speaking test jarayonini kuzatish uchun
+    c.execute("""CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tg_id INTEGER,
+        part INTEGER DEFAULT 1,
+        topic_id INTEGER,
+        status TEXT DEFAULT 'active',
+        created_at TEXT
+    )""")
+    
+    # Topics jadvali
+    c.execute("""CREATE TABLE IF NOT EXISTS topics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        part INTEGER,
+        level TEXT,
+        exam TEXT,
+        topic TEXT,
+        category TEXT DEFAULT 'General',
+        added_by INTEGER,
+        created_at TEXT
+    )""")
+    
+    # Results jadvali
+    c.execute("""CREATE TABLE IF NOT EXISTS results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tg_id INTEGER,
+        topic_id INTEGER,
+        transcript TEXT,
+        band TEXT,
+        cefr TEXT,
+        feedback TEXT,
+        grammar_tips TEXT,
+        vocab_tips TEXT,
+        date TEXT
+    )""")
+    
+    # Vocabularies jadvali
+    c.execute("""CREATE TABLE IF NOT EXISTS vocabularies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        topic TEXT,
+        content TEXT,
+        level TEXT,
+        exam TEXT,
+        created_at TEXT
+    )""")
+    
+    conn.commit()
+    conn.close()
+
+# Foydalanuvchi operatsiyalari
+def add_user(tg_id, username, full_name, lang, age, interests, level, exam, source):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Agar foydalanuvchi mavjud bo'lsa, ma'lumotlarini yangilaymiz
+    c.execute("""
+        INSERT INTO users (tg_id, username, full_name, lang, age, interests, level, exam, source, registered_at, last_activity)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(tg_id) DO UPDATE SET
+        username=excluded.username,
+        full_name=excluded.full_name,
+        lang=excluded.lang,
+        age=excluded.age,
+        interests=excluded.interests,
+        level=excluded.level,
+        exam=excluded.exam,
+        source=excluded.source,
+        last_activity=excluded.last_activity
+    """, (tg_id, username, full_name, lang, age, interests, level, exam, source, date, date))
+    conn.commit()
+    conn.close()
+
+def get_user(tg_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    row = conn.execute("SELECT * FROM users WHERE tg_id=?", (tg_id,)).fetchone()
+    conn.close()
+    if row:
+        return dict(row)
+    return None
+
+def update_streak(tg_id):
+    user = get_user(tg_id)
+    if not user: return
+    
+    now = datetime.now()
+    last_act = datetime.strptime(user['last_activity'], "%Y-%m-%d %H:%M:%S") if user['last_activity'] else None
+    
+    conn = sqlite3.connect(DB_PATH)
+    if last_act:
+        diff = (now.date() - last_act.date()).days
+        if diff == 1:
+            conn.execute("UPDATE users SET streak = streak + 1, last_activity = ? WHERE tg_id = ?", (now.strftime("%Y-%m-%d %H:%M:%S"), tg_id))
+        elif diff > 1:
+            conn.execute("UPDATE users SET streak = 1, last_activity = ? WHERE tg_id = ?", (now.strftime("%Y-%m-%d %H:%M:%S"), tg_id))
+        else:
+            conn.execute("UPDATE users SET last_activity = ? WHERE tg_id = ?", (now.strftime("%Y-%m-%d %H:%M:%S"), tg_id))
+    else:
+        conn.execute("UPDATE users SET streak = 1, last_activity = ? WHERE tg_id = ?", (now.strftime("%Y-%m-%d %H:%M:%S"), tg_id))
+    
+    conn.commit()
+    conn.close()
+
+def update_user_field(tg_id, field, value):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(f"UPDATE users SET {field}=? WHERE tg_id=?", (value, tg_id))
+    conn.commit()
+    conn.close()
+
+# Topik operatsiyalari
+def add_topic(part, level, exam, topic, added_by, category='General'):
+    conn = sqlite3.connect(DB_PATH)
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor = conn.execute("INSERT INTO topics (part, level, exam, topic, added_by, created_at, category) VALUES (?,?,?,?,?,?,?)",
+                 (part, level, exam, topic, added_by, date, category))
+    topic_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return topic_id
+
+def delete_topic(topic_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("DELETE FROM topics WHERE id=?", (topic_id,))
+    conn.commit()
+    conn.close()
+
+def get_all_topics():
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute("SELECT * FROM topics ORDER BY id DESC").fetchall()
+    conn.close()
+    return rows
+
+def get_filtered_topics(exam, part, level):
+    conn = sqlite3.connect(DB_PATH)
+    query = "SELECT * FROM topics WHERE (exam=? OR exam='ALL')"
+    params = [exam]
+    if part:
+        query += " AND part=?"
+        params.append(part)
+    if level and level != 'ALL':
+        query += " AND (level=? OR level='ALL')"
+        params.append(level)
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return rows
+
+# Natija operatsiyalari
+def save_result(tg_id, topic_id, transcript, band, cefr, feedback, grammar="", vocab=""):
+    conn = sqlite3.connect(DB_PATH)
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute("INSERT INTO results (tg_id, topic_id, transcript, band, cefr, feedback, grammar_tips, vocab_tips, date) VALUES (?,?,?,?,?,?,?,?,?)",
+                 (tg_id, topic_id, transcript, band, cefr, feedback, grammar, vocab, date))
+    conn.commit()
+    conn.close()
+    update_streak(tg_id)
+
+def get_user_results(tg_id, limit=5, offset=0):
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute("""
+        SELECT r.topic_id, r.band, r.cefr, r.date, t.topic, r.feedback, r.grammar_tips, r.vocab_tips
+        FROM results r 
+        LEFT JOIN topics t ON r.topic_id = t.id 
+        WHERE r.tg_id=? 
+        ORDER BY r.date DESC LIMIT ? OFFSET ?
+    """, (tg_id, limit, offset)).fetchall()
+    conn.close()
+    return rows
+
+def get_stats():
+    conn = sqlite3.connect(DB_PATH)
+    total_users = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    total_tests = conn.execute("SELECT COUNT(*) FROM results").fetchone()[0]
+    avg_band = conn.execute("SELECT AVG(CAST(band AS FLOAT)) FROM results WHERE band != '—'").fetchone()[0]
+    conn.close()
+    return total_users, total_tests, avg_band or 0
+
+def get_daily_stats():
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute("""
+        SELECT date(date) as d, COUNT(*) 
+        FROM results 
+        WHERE date >= date('now', '-7 days') 
+        GROUP BY d ORDER BY d ASC
+    """).fetchall()
+    conn.close()
+    return rows
+
+def get_all_users():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute("SELECT * FROM users ORDER BY registered_at DESC").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]# Vocabulary operatsiyalari
+def add_vocab(topic, content, level, exam):
+    conn = sqlite3.connect(DB_PATH)
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute("INSERT INTO vocabularies (topic, content, level, exam, created_at) VALUES (?,?,?,?,?)",
+                 (topic, content, level, exam, date))
+    conn.commit()
+    conn.close()
+
+def get_all_vocab(exam=None, level=None):
+    conn = sqlite3.connect(DB_PATH)
+    query = "SELECT * FROM vocabularies"
+    params = []
+    if exam or level:
+        query += " WHERE 1=1"
+        if exam and exam != 'ALL':
+            query += " AND (exam=? OR exam='ALL')"
+            params.append(exam)
+        if level and level != 'ALL':
+            query += " AND (level=? OR level='ALL')"
+            params.append(level)
+    
+    query += " ORDER BY id DESC"
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return rows
+
+def delete_vocab(v_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("DELETE FROM vocabularies WHERE id=?", (v_id,))
+    conn.commit()
+    conn.close()
+
