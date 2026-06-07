@@ -37,8 +37,8 @@ class Settings(BaseSettings):
 
 config = Settings()
 
-# Backwards-compatible module-level name expected by some modules (utils/db.py)
-# If DATABASE_URL points to a sqlite file, extract its path; otherwise use db_path setting.
+# Backwards-compatible module-level names expected by older modules
+# DB_PATH: If DATABASE_URL points to a sqlite file, extract its path; otherwise use db_path setting.
 _db_path = getattr(config, 'db_path', None)
 if _db_path:
     DB_PATH = _db_path
@@ -49,3 +49,13 @@ else:
         DB_PATH = m.group(1) if m else './bot.db'
     else:
         DB_PATH = './bot.db'
+
+# GOOGLE_API_KEY: provide module-level variable for backward compatibility
+_google = getattr(config, 'google_api_key', None)
+if _google:
+    try:
+        GOOGLE_API_KEY = _google.get_secret_value()
+    except Exception:
+        GOOGLE_API_KEY = str(_google)
+else:
+    GOOGLE_API_KEY = None
