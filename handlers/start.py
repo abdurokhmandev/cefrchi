@@ -23,7 +23,7 @@ class Registration(StatesGroup):
     source = State()
 
 @router.message(CommandStart())
-async def cmd_start(message: Message, state: FSMContext, user):
+async def cmd_start(message: Message, state: FSMContext, user=None):
     user_id = message.from_user.id
     
     # Agar foydalanuvchi bazada bo'lsa
