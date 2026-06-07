@@ -59,3 +59,19 @@ if _google:
         GOOGLE_API_KEY = str(_google)
 else:
     GOOGLE_API_KEY = None
+
+# ADMIN_IDS: module-level alias for older code
+try:
+    ADMIN_IDS = config.admin_ids
+except Exception:
+    ADMIN_IDS = []
+
+# BOT_TOKEN: module-level alias
+_bot = getattr(config, 'bot_token', None)
+if _bot:
+    try:
+        BOT_TOKEN = _bot.get_secret_value()
+    except Exception:
+        BOT_TOKEN = str(_bot)
+else:
+    BOT_TOKEN = None
