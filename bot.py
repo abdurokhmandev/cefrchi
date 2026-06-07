@@ -54,7 +54,7 @@ if __name__ == "__main__":
 =======
 import logging
 from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import config
 from database.engine import engine
@@ -81,7 +81,7 @@ async def main():
     await init_db()
     
     bot = Bot(token=config.bot_token.get_secret_value())
-    storage = RedisStorage.from_url(config.redis_url)
+    storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
     
     # Routerlarni qo'shish

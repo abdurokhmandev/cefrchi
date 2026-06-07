@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     openrouter_api_key: SecretStr
     openai_api_key: SecretStr
     database_url: str
-    redis_url: str
+    # redis_url removed, using in‑memory storage
     admin_ids: List[int]
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
