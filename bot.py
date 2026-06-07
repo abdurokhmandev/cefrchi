@@ -7,6 +7,7 @@ from config import config
 from database.engine import engine
 from database.models import Base
 from services.scheduler import setup_scheduler
+from utils import db as local_db
 
 # Handlers import
 from handlers.start import router as start_router
@@ -21,10 +22,16 @@ logger = logging.getLogger(__name__)
 
 async def init_db():
     async with engine.begin() as conn:
-        # Barcha jadvallarni yaratish
+        # Barcha jadvallarni yaratish (async SQLAlchemy models)
         await conn.run_sync(Base.metadata.create_all)
 
 async def main():
+    # Ensure legacy sqlite DB and tables are initialized (utils/db.py)
+    try:
+        local_db.init()
+    except Exception as e:
+        logger.warning(f"Failed to init local sqlite DB: {e}")
+
     await init_db()
     
     bot = Bot(token=config.bot_token.get_secret_value())
