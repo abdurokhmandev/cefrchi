@@ -1,0 +1,16 @@
+{
+  "welcome": "Assalomu alaykum, {name}! IELTS va CEFR botiga xush kelibsiz.",
+  "choose_lang": "Tilni tanlang:",
+  "main_menu": "Asosiy menyu. Nima mashq qilasiz?",
+  "speaking_start": "🎙 Speaking mashqi.\nQismni tanlang:",
+  "processing": "⏳ Baholanmoqda...",
+  "placement_test_start": "Botdan to'liq foydalanish uchun darajangizni aniqlaymiz.\nTayyormisiz?",
+  "placement_result": "🎓 Siz {cefr} darajasida ekansiz!\n📊 Taxminiy IELTS band: {band}\n📅 Imtihon sanangizni kiriting (masalan: YYYY-MM-DD)\n🎯 Maqsad band scoreni tanlang:",
+  "exam_date_saved": "✅ Imtihon sanasi saqlandi!",
+  "target_saved": "🎯 Maqsad saqlandi! Endi mashqlarni boshlashimiz mumkin.",
+  "speak_part_selected": "Siz Part {part} ni tanladingiz.\n\nSavol:\n{question}\n\nTayyor bo'lgach, ovoz yuboring.",
+  "speak_part2_prep": "Tayyorlanish uchun 1 daqiqa vaqtingiz bor. Hoziroq boshlashingiz mumkin.",
+  "speak_analyzing": "⏳ Ovozingiz tahlil qilinmoqda...",
+  "speak_error": "Audio tanib bo'lmadi yoki uzilish yuz berdi. Iltimos qayta yuboring.",
+  "speak_result": "━━━━━━━━━━━━━━━━━━━━━━━━\n🎙 Speaking natijasi\n━━━━━━━━━━━━━━━━━━━━━━━━\n📊 Band score: {band}\n🎓 CEFR: {cefr}\n\nFluency:       {fluency} ⭐️\nVocabulary:    {lexical} ⭐️\nGrammar:       {grammar} ⭐️\nPronunciation: {pronunciation} ⭐️\n\n💬 Baho:\n{feedback_uz}\n\n✅ Kuchli tomonlar:\n{strengths}\n\n📈 Yaxshilash kerak:\n{improvements}\n\n💡 Yaxshilangan namuna:\n\"{corrected_sample}\"\n━━━━━━━━━━━━━━━━━━━━━━━━"
+}

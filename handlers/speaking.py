@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
@@ -172,3 +173,148 @@ async def finalize_session(msg_obj, state, user, last_transcript, topic_id):
     await status_msg.answer(res['full_text'], parse_mode="HTML", reply_markup=kb.session_end_kb(user['lang']))
     if not isinstance(msg_obj, Message): await status_msg.delete()
     await state.clear()
+=======
+import os
+import logging
+from aiogram import Router, F, types, Bot
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+
+from services.whisper_stt import transcribe_audio
+from services.openrouter import generate_speaking_question, grade_speaking
+from locales.i18n import i18n
+from keyboards.menus import get_speaking_parts_menu, get_speaking_result_menu
+from database.engine import get_session
+from database.crud import add_score, create_study_session
+
+logger = logging.getLogger(__name__)
+router = Router()
+
+class SpeakingStates(StatesGroup):
+    choosing_part = State()
+    choosing_topic = State()
+    preparing = State()
+    recording = State()
+    processing = State()
+
+@router.callback_query(F.data == "menu_speaking")
+async def start_speaking(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(i18n.get("speaking_start"), reply_markup=get_speaking_parts_menu())
+    await state.set_state(SpeakingStates.choosing_part)
+
+@router.callback_query(SpeakingStates.choosing_part, F.data.startswith("speak_part_"))
+async def part_selected(callback: types.CallbackQuery, state: FSMContext):
+    part = int(callback.data.split("_")[2])
+    await state.update_data(part=part)
+    
+    try:
+        await callback.message.edit_text("⏳ Savol tayyorlanmoqda...")
+        q_data = await generate_speaking_question("B2", part)
+        question = q_data.get("question", "Tell me about your hometown.")
+        await state.update_data(question=question)
+        
+        text = i18n.get("speak_part_selected", part=part, question=question)
+        
+        if part == 2:
+            await callback.message.edit_text(text + "\n\n" + i18n.get("speak_part2_prep"))
+        else:
+            await callback.message.edit_text(text)
+            
+        await state.set_state(SpeakingStates.recording)
+    except Exception as e:
+        logger.error(f"Error generating question: {e}")
+        await callback.message.edit_text("Savol yaratishda xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.")
+
+@router.message(SpeakingStates.recording, F.voice)
+async def process_audio(message: types.Message, state: FSMContext, bot: Bot):
+    await state.set_state(SpeakingStates.processing)
+    wait_msg = await message.answer(i18n.get("speak_analyzing"))
+    
+    try:
+        file_id = message.voice.file_id
+        file = await bot.get_file(file_id)
+        file_path = f"downloads/{file_id}.ogg"
+        
+        os.makedirs("downloads", exist_ok=True)
+        await bot.download_file(file.file_path, destination=file_path)
+        
+        # Whisper STT orqali matnga o'girish
+        transcript = await transcribe_audio(file_path)
+        
+        # OpenRouter orqali grading qilish
+        data = await state.get_data()
+        part = data.get("part", 1)
+        question = data.get("question", "")
+        
+        grade = await grade_speaking(transcript, question, part)
+        
+        # Javobni formatlash
+        strengths = "\n- ".join(grade.get("strengths", []))
+        if strengths: strengths = "- " + strengths
+            
+        improvements = "\n- ".join(grade.get("improvements", []))
+        if improvements: improvements = "- " + improvements
+        
+        result_text = i18n.get(
+            "speak_result",
+            band=grade.get("overall", 0.0),
+            cefr=grade.get("cefr", "A2"),
+            fluency=grade.get("fluency", 0.0),
+            lexical=grade.get("lexical", 0.0),
+            grammar=grade.get("grammar", 0.0),
+            pronunciation=grade.get("pronunciation", 0.0),
+            feedback_uz=grade.get("feedback_uz", "Ma'lumot topilmadi."),
+            strengths=strengths,
+            improvements=improvements,
+            corrected_sample=grade.get("corrected_sample", "")
+        )
+        
+        # Ma'lumotlarni bazaga saqlash
+        async for session in get_session():
+            await add_score(
+                session, 
+                message.from_user.id, 
+                "speaking", 
+                grade.get("overall", 0.0),
+                grade.get("cefr", "A2"),
+                grade, 
+                grade.get("feedback_uz", ""), 
+                "", 
+                transcript
+            )
+            await create_study_session(
+                session, 
+                message.from_user.id, 
+                "speaking", 
+                120, 
+                int(grade.get("overall", 0.0)*10), 
+                grade.get("overall", 0.0)
+            )
+        
+        await wait_msg.delete()
+        await message.answer(result_text, reply_markup=get_speaking_result_menu())
+        
+        # Faylni o'chirish
+        try:
+            os.remove(file_path)
+        except OSError:
+            pass
+            
+        await state.clear()
+        
+    except Exception as e:
+        logger.error(f"Audio processing error: {e}")
+        await wait_msg.delete()
+        await message.answer(i18n.get("speak_error"))
+        await state.set_state(SpeakingStates.recording)
+
+@router.callback_query(F.data == "speak_retry")
+async def retry_speaking(callback: types.CallbackQuery, state: FSMContext):
+    await start_speaking(callback, state)
+
+@router.callback_query(F.data == "back_to_main")
+async def back_to_main(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    from keyboards.menus import get_main_menu
+    await callback.message.edit_text(i18n.get("main_menu"), reply_markup=get_main_menu())
+>>>>>>> 1d2f1c3 (Initial commit)
